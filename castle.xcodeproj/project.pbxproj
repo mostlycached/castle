@@ -26,6 +26,7 @@
 		87BAF107D7DC802FA12FB703 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EA0FE70BA5A7990CE3EC543 /* CompassView.swift */; };
 		8C5D0343C2275C6429B43B24 /* SeasonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AC5CA3323A8ADC45D6A1E6 /* SeasonDetailView.swift */; };
 		8CDF665AB81A1B723B6BD2C1 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = F3AF00276DC491820AFEA1E7 /* FirebaseFunctions */; };
+		8D449D1AF0DE1A6ADE9AE432 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D8F16B06AA40455E1EBEECCB /* Assets.xcassets */; };
 		8F4F0A7952653442C76D7AAB /* RoomDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A2FC3DE5584E06CEB8CCBF /* RoomDefinition.swift */; };
 		994C7074C0A4E02E0D7F3AF7 /* MusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 634B1A2B7E9E03A29414D757 /* MusicService.swift */; };
 		A4017B59C2F1717FFD4447C6 /* StrategistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E03608869425ECD690B058 /* StrategistService.swift */; };
@@ -69,6 +70,7 @@
 		B36A073C01F03F1F2A932400 /* RoomDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomDetailView.swift; sourceTree = "<group>"; };
 		CD1144F27C47B8F51ED75785 /* RoomCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomCardView.swift; sourceTree = "<group>"; };
 		D6A3E3060CE3296BAE823401 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		D8F16B06AA40455E1EBEECCB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E0E7BC74463340721AEAB641 /* StrategistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrategistView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -170,6 +172,7 @@
 		BCAF872A46939E0C4B6FC635 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D8F16B06AA40455E1EBEECCB /* Assets.xcassets */,
 				16CCD75558C122588D4DEF6F /* rooms_data.json */,
 			);
 			name = Resources;
@@ -262,6 +265,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D449D1AF0DE1A6ADE9AE432 /* Assets.xcassets in Resources */,
 				861C2D3C62535542BD31AAEF /* GoogleService-Info.plist in Resources */,
 				6F9B331CAC84A9C8B326ACB9 /* rooms_data.json in Resources */,
 			);
