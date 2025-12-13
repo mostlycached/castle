@@ -1,0 +1,349 @@
+{
+    "meta": {
+        "system_name": "The 72 Rooms",
+        "version": "1.0",
+        "user_context": {
+            "current_season": "Winter/Strategy",
+            "somatic_calibration_needed": true
+        }
+    },
+    "wings": [
+        "I. The Foundation (Restoration)",
+        "II. The Administration (Governance)",
+        "III. The Machine Shop (Production)",
+        "IV. The Wilderness (Exploration)",
+        "V. The Forum (Exchange)",
+        "VI. The Observatory (Metacognition)"
+    ],
+    "rooms": [
+        {
+            "id": "001",
+            "name": "The Crypt",
+            "wing": "I. The Foundation (Restoration)",
+            "physics": {
+                "dionysian_energy": "Low",
+                "apollonian_structure": "Low",
+                "input_logic": "Null",
+                "output_logic": "Reboot"
+            },
+            "evocative_why": "To reset the nervous system, one must simulate death. Total sensory shutdown is the only cure for over-stimulation.",
+            "constraints": [
+                "Total Darkness (Blackout curtains)",
+                "Zero Audio Input",
+                "Horizontal Posture"
+            ],
+            "instance_state": {
+                "variant_name": "Bedroom (Night Mode)",
+                "familiarity_score": 0.9,
+                "current_friction": "Low",
+                "required_inventory": [
+                    "Sleep Mask",
+                    "Earplugs",
+                    "Heavy Blanket"
+                ],
+                "is_active": false
+            },
+            "liturgy": {
+                "entry": "Remove all technology.",
+                "step_1": "Lie down.",
+                "step_2": "Count backward from 100.",
+                "exit": "Open eyes only when the alarm triggers."
+            }
+        },
+        {
+            "id": "002",
+            "name": "The Bath",
+            "wing": "I. The Foundation (Restoration)",
+            "physics": {
+                "dionysian_energy": "Low",
+                "apollonian_structure": "Low",
+                "input_logic": "Liquid",
+                "output_logic": "Dissolution"
+            },
+            "evocative_why": "Water is the ancient solvent for anxiety. You cannot hold tension while floating.",
+            "constraints": [
+                "Nakedness (Vulnerability)",
+                "Submersion",
+                "No Electronics near water"
+            ],
+            "instance_state": {
+                "variant_name": "Master Bathroom",
+                "familiarity_score": 0.8,
+                "current_friction": "Medium",
+                "required_inventory": [
+                    "Hot Water",
+                    "Epsom Salts",
+                    "Towel"
+                ],
+                "is_active": false
+            },
+            "liturgy": {
+                "entry": "Start the water.",
+                "step_1": "Submerge ears.",
+                "exit": "Drain the water (watch the stress leave)."
+            }
+        },
+        {
+            "id": "010",
+            "name": "The Swamp",
+            "wing": "I. The Foundation (Restoration)",
+            "physics": {
+                "dionysian_energy": "Low",
+                "apollonian_structure": "Low",
+                "input_logic": "Infinite Scroll",
+                "output_logic": "Decay"
+            },
+            "evocative_why": "Even the soul needs to rot sometimes. This is the permitted zone for low-quality dopamine, bounded by time so it does not become a grave.",
+            "constraints": [
+                "Time-Boxed (Max 45 mins)",
+                "Horizontal Posture"
+            ],
+            "instance_state": {
+                "variant_name": "The Grey Couch",
+                "familiarity_score": 0.95,
+                "current_friction": "Zero",
+                "required_inventory": [
+                    "Phone",
+                    "Snack"
+                ],
+                "is_active": false
+            },
+            "liturgy": {
+                "entry": "Set timer for 45 mins.",
+                "step_1": "Scroll mindlessly.",
+                "exit": "When timer rings, physically stand up immediately."
+            }
+        },
+        {
+            "id": "013",
+            "name": "The Morning Chapel",
+            "wing": "II. The Administration (Governance)",
+            "physics": {
+                "dionysian_energy": "Low",
+                "apollonian_structure": "High",
+                "input_logic": "Filter (High Pass)",
+                "output_logic": "Vector Alignment"
+            },
+            "evocative_why": "Sovereignty before Service. Hardening the 'I' before it encounters the 'They'.",
+            "constraints": [
+                "The Faraday Wall (No Phone)",
+                "The Time-Lock (10-30 mins)",
+                "The Silence"
+            ],
+            "instance_state": {
+                "variant_name": "Balcony Chair",
+                "familiarity_score": 0.2,
+                "current_friction": "High",
+                "required_inventory": [
+                    "Notebook",
+                    "Pen",
+                    "Black Coffee"
+                ],
+                "is_active": false
+            },
+            "liturgy": {
+                "entry": "Wake. Pour liquid. Walk past phone.",
+                "step_1": "The Dump (Write static).",
+                "step_2": "The Vector (Set objective).",
+                "exit": "Close book. Stand up."
+            }
+        },
+        {
+            "id": "025",
+            "name": "The Cockpit",
+            "wing": "III. The Machine Shop (Production)",
+            "physics": {
+                "dionysian_energy": "High",
+                "apollonian_structure": "High",
+                "input_logic": "Data Stream",
+                "output_logic": "Velocity"
+            },
+            "evocative_why": "God Mode. The fusion of human intent and machine speed.",
+            "constraints": [
+                "Single Screen Focus",
+                "No Context Switching",
+                "Ergonomic Lock-in"
+            ],
+            "instance_state": {
+                "variant_name": "Standing Desk Home",
+                "familiarity_score": 0.8,
+                "current_friction": "Medium",
+                "required_inventory": [
+                    "Mechanical Keyboard",
+                    "IDE",
+                    " ANC Headphones"
+                ],
+                "is_active": false
+            },
+            "liturgy": {
+                "entry": "Put on headphones.",
+                "step_1": "Open single terminal window.",
+                "step_2": "Type first line.",
+                "exit": "Commit code. Remove headphones."
+            }
+        },
+        {
+            "id": "026",
+            "name": "The Forge",
+            "wing": "III. The Machine Shop (Production)",
+            "physics": {
+                "dionysian_energy": "High",
+                "apollonian_structure": "High",
+                "input_logic": "Resistance",
+                "output_logic": "Strength"
+            },
+            "evocative_why": "The mind cannot process all stress. Some must be burned out through the muscles.",
+            "constraints": [
+                "Heavy Resistance",
+                "Repetition",
+                "Pain Tolerance"
+            ],
+            "instance_state": {
+                "variant_name": "Local Gym",
+                "familiarity_score": 0.4,
+                "current_friction": "High",
+                "required_inventory": [
+                    "Gym Kit",
+                    "Water Bottle"
+                ],
+                "is_active": false
+            },
+            "liturgy": {
+                "entry": "Change into kit.",
+                "step_1": "Lift heavy things.",
+                "exit": "Shower (Transition to Clean Room)."
+            }
+        },
+        {
+            "id": "027",
+            "name": "The Studio (Closed)",
+            "wing": "III. The Machine Shop (Production)",
+            "physics": {
+                "dionysian_energy": "High (Internal)",
+                "apollonian_structure": "High",
+                "input_logic": "Aperture",
+                "output_logic": "Synthesis"
+            },
+            "evocative_why": "To create is to invite the Shadow. You need a room where you are safe to play the wrong note.",
+            "constraints": [
+                "No Observers",
+                "No Exit for 30 mins",
+                "Tools Uncapped"
+            ],
+            "instance_state": {
+                "variant_name": "Spare Room / Writing Desk",
+                "familiarity_score": 0.3,
+                "current_friction": "High",
+                "required_inventory": [
+                    "Blank Canvas/Page",
+                    "Reference Books"
+                ],
+                "is_active": false
+            },
+            "liturgy": {
+                "entry": "Lock door.",
+                "step_1": "Stare at blank space.",
+                "step_2": "Make a mess.",
+                "exit": "Clean the brushes/Save the file."
+            }
+        },
+        {
+            "id": "037",
+            "name": "The Intersection",
+            "wing": "IV. The Wilderness (Exploration)",
+            "physics": {
+                "dionysian_energy": "High",
+                "apollonian_structure": "Low",
+                "input_logic": "Stochastic",
+                "output_logic": "Pattern Recognition"
+            },
+            "evocative_why": "The cure for stagnation is randomness. Stand where the world collides.",
+            "constraints": [
+                "No Headphones (Audio ON)",
+                "Open Eyes",
+                "Movement"
+            ],
+            "instance_state": {
+                "variant_name": "Times Square / Main St",
+                "familiarity_score": 0.6,
+                "current_friction": "Medium",
+                "required_inventory": [
+                    "Walking Shoes",
+                    "Weather Appropriate Coat"
+                ],
+                "is_active": false
+            },
+            "liturgy": {
+                "entry": "Walk out the front door.",
+                "step_1": "Drift without destination.",
+                "exit": "Return home when inspired or exhausted."
+            }
+        },
+        {
+            "id": "049",
+            "name": "The River",
+            "wing": "V. The Forum (Exchange)",
+            "physics": {
+                "dionysian_energy": "Medium",
+                "apollonian_structure": "Medium",
+                "input_logic": "White Noise",
+                "output_logic": "Flow"
+            },
+            "evocative_why": "To be alone together. The visual noise of others scrubs the static from your own mind.",
+            "constraints": [
+                "Anonymity",
+                "Ambient Noise",
+                "Caffeine Access"
+            ],
+            "instance_state": {
+                "variant_name": "Corner Starbucks",
+                "familiarity_score": 0.9,
+                "current_friction": "Low",
+                "required_inventory": [
+                    "Laptop",
+                    "Headphones",
+                    "Coffee Money"
+                ],
+                "is_active": false
+            },
+            "liturgy": {
+                "entry": "Order drink. Find corner seat.",
+                "step_1": "Put on headphones.",
+                "exit": "Leave when the cup is empty."
+            }
+        },
+        {
+            "id": "061",
+            "name": "The Bridge",
+            "wing": "VI. The Observatory (Metacognition)",
+            "physics": {
+                "dionysian_energy": "Meta",
+                "apollonian_structure": "Meta",
+                "input_logic": "Dashboard",
+                "output_logic": "Command"
+            },
+            "evocative_why": "The room where you choose the room. The Helmsman's station.",
+            "constraints": [
+                "High Visibility",
+                "Data Rich",
+                "Detached Emotion"
+            ],
+            "instance_state": {
+                "variant_name": "The '72 Rooms' App / Journal Index",
+                "familiarity_score": 0.5,
+                "current_friction": "Medium",
+                "required_inventory": [
+                    "This JSON File",
+                    "Calendar"
+                ],
+                "is_active": true
+            },
+            "liturgy": {
+                "entry": "Open the map.",
+                "step_1": "Locate current coordinates.",
+                "step_2": "Plot next jump.",
+                "exit": "Execute transition."
+            }
+        }
+    ]
+}

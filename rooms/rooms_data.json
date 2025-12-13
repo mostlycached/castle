@@ -1,0 +1,464 @@
+[
+    {
+        "wing": "I. The Foundation (Restoration)",
+        "rooms": [
+            {
+                "number": "001",
+                "name": "The Crypt",
+                "physics_hint": "Low D, Low A. Total shutdown.",
+                "function": "Sensory deprivation. Resetting the nervous system."
+            },
+            {
+                "number": "002",
+                "name": "The Bath",
+                "physics_hint": "Low D, Low A. Liquid state.",
+                "function": "Dissolution of muscle tension."
+            },
+            {
+                "number": "003",
+                "name": "The Garden",
+                "physics_hint": "Low D, Low A. Organic growth.",
+                "function": "Slow observation of nature. Low stakes."
+            },
+            {
+                "number": "004",
+                "name": "The Monastery Cell",
+                "physics_hint": "Low D, Low A. Boredom induction.",
+                "function": "Dopamine fasting. Facing the void."
+            },
+            {
+                "number": "005",
+                "name": "The Incubator",
+                "physics_hint": "Low D, Low A. Passive processing.",
+                "function": "Nap/Daydream. Subconscious problem solving."
+            },
+            {
+                "number": "006",
+                "name": "The Sick Bay",
+                "physics_hint": "Low D, Low A. Healing mode.",
+                "function": "Acknowledging fragility. Comfort."
+            },
+            {
+                "number": "007",
+                "name": "The Hearth",
+                "physics_hint": "Low D, Low A. Primordial safety.",
+                "function": "Staring at fire/light to stabilize the mind."
+            },
+            {
+                "number": "008",
+                "name": "The Library (Quiet)",
+                "physics_hint": "Low D, Low A. Passive absorption.",
+                "function": "Silence shared with the dead (books)."
+            },
+            {
+                "number": "009",
+                "name": "The Analog Loop",
+                "physics_hint": "Low D, Moderate A. Repetitive motion.",
+                "function": "Soothing anxiety through knitting, vinyl, sketching."
+            },
+            {
+                "number": "010",
+                "name": "The Swamp",
+                "physics_hint": "Low D, Low A. Permitted indulgence.",
+                "function": "Designated rotting zone. Doomscrolling (Time-boxed)."
+            },
+            {
+                "number": "011",
+                "name": "The Basecamp",
+                "physics_hint": "Low D, Moderate A. Preparation.",
+                "function": "Calibrating supplies (food/coffee) before the climb."
+            },
+            {
+                "number": "012",
+                "name": "The Airlock",
+                "physics_hint": "Transitional State.",
+                "function": "Decompression between worlds (commute/hallway)."
+            }
+        ]
+    },
+    {
+        "wing": "II. The Administration (Governance)",
+        "rooms": [
+            {
+                "number": "013",
+                "name": "The Morning Chapel",
+                "physics_hint": "Low D, High A. Signal calibration.",
+                "function": "Setting the trajectory. Zero external input."
+            },
+            {
+                "number": "014",
+                "name": "The Archive",
+                "physics_hint": "Low D, High A. Storage management.",
+                "function": "Categorizing the past. Freeing up RAM."
+            },
+            {
+                "number": "015",
+                "name": "The Map Room",
+                "physics_hint": "Low D, High A. Strategy.",
+                "function": "High-level view of trajectory. Whiteboarding."
+            },
+            {
+                "number": "016",
+                "name": "The Checkpoint",
+                "physics_hint": "Low D, High A. Audit.",
+                "function": "Weekly review. Assessing resources/constraints."
+            },
+            {
+                "number": "017",
+                "name": "The Waiting Room",
+                "physics_hint": "Low D, High A. Forced patience.",
+                "function": "Observing time without agency."
+            },
+            {
+                "number": "018",
+                "name": "The Editor's Desk",
+                "physics_hint": "Low D, High A. Subtractive processing.",
+                "function": "Code review, polishing, cutting."
+            },
+            {
+                "number": "019",
+                "name": "The Clean Room",
+                "physics_hint": "Low D, High A. Physical order.",
+                "function": "Cleaning, dishes. Restoring environment."
+            },
+            {
+                "number": "020",
+                "name": "The Confessional",
+                "physics_hint": "Low D, High A. Shadow work.",
+                "function": "Journaling. Admitting failures/sins."
+            },
+            {
+                "number": "021",
+                "name": "The Classroom",
+                "physics_hint": "Low D, High A. Structured intake.",
+                "function": "Lecture, tutorial, skill acquisition."
+            },
+            {
+                "number": "022",
+                "name": "The Courtroom",
+                "physics_hint": "Low D, High A. Judgment.",
+                "function": "Weighing decisions. Finalizing choice."
+            },
+            {
+                "number": "023",
+                "name": "The Post Office",
+                "physics_hint": "Low D, High A. Dispatch.",
+                "function": "Email/Slack processing. Clearing the queue."
+            },
+            {
+                "number": "024",
+                "name": "The Vault",
+                "physics_hint": "Low D, High A. Security.",
+                "function": "Password management, backups, finances."
+            }
+        ]
+    },
+    {
+        "wing": "III. The Machine Shop (Production)",
+        "rooms": [
+            {
+                "number": "025",
+                "name": "The Cockpit",
+                "physics_hint": "High D, High A. Velocity.",
+                "function": "God-mode technical execution. IDE/Terminal."
+            },
+            {
+                "number": "026",
+                "name": "The Forge",
+                "physics_hint": "High D, High A. Resistance.",
+                "function": "Heavy lifting, intense physical labor."
+            },
+            {
+                "number": "027",
+                "name": "The Studio (Closed)",
+                "physics_hint": "Internal High D, High A. Aperture.",
+                "function": "Deep creative synthesis. No exit."
+            },
+            {
+                "number": "028",
+                "name": "The Kitchen (Service)",
+                "physics_hint": "High D, High A. Multi-tasking.",
+                "function": "Flow state under pressure. Cooking."
+            },
+            {
+                "number": "029",
+                "name": "The Arena",
+                "physics_hint": "High D, High A. Performance.",
+                "function": "Public speaking, competing. High stakes."
+            },
+            {
+                "number": "030",
+                "name": "The Sprint",
+                "physics_hint": "High D, High A. Time-boxed Velocity.",
+                "function": "Hackathon mode. Max output, min time."
+            },
+            {
+                "number": "031",
+                "name": "The Laboratory",
+                "physics_hint": "High D, High A. Experimentation.",
+                "function": "Debugging, testing hypotheses."
+            },
+            {
+                "number": "032",
+                "name": "The Cathedral",
+                "physics_hint": "High D, High A. Awe/Structure.",
+                "function": "Listening to complex music. Aligning with order."
+            },
+            {
+                "number": "033",
+                "name": "The Hive",
+                "physics_hint": "Moderate D, High A. Co-resonance.",
+                "function": "Borrowing focus from others (Coworking)."
+            },
+            {
+                "number": "034",
+                "name": "The Dojo",
+                "physics_hint": "High D, High A. Repetition.",
+                "function": "Drills, scales, Leetcode. Deepening skill."
+            },
+            {
+                "number": "035",
+                "name": "The War Room",
+                "physics_hint": "High D, High A. Mobilization.",
+                "function": "Crisis management. Crunch time."
+            },
+            {
+                "number": "036",
+                "name": "The Altar of Work",
+                "physics_hint": "High D, High A. Completion.",
+                "function": "Shipping. The final seal."
+            }
+        ]
+    },
+    {
+        "wing": "IV. The Wilderness (Exploration)",
+        "rooms": [
+            {
+                "number": "037",
+                "name": "The Intersection",
+                "physics_hint": "High D, Low A. Overwhelming input.",
+                "function": "Watching the stream (City/Times Sq)."
+            },
+            {
+                "number": "038",
+                "name": "The Nightclub",
+                "physics_hint": "High D, Low A. Dissolution.",
+                "function": "Physical ecstasy. Dancing. Loud music."
+            },
+            {
+                "number": "039",
+                "name": "The Mosh Pit",
+                "physics_hint": "High D, Low A. Collision.",
+                "function": "Aggression release. Protest/Riot."
+            },
+            {
+                "number": "040",
+                "name": "The Casino",
+                "physics_hint": "High D, Low A. Probability.",
+                "function": "Risk-taking, investing, gambling."
+            },
+            {
+                "number": "041",
+                "name": "The Wilderness",
+                "physics_hint": "High D, Low A. Wayfinding.",
+                "function": "Hiking off-trail. Relying on instinct."
+            },
+            {
+                "number": "042",
+                "name": "The Improv Stage",
+                "physics_hint": "High D, Low A. Generative.",
+                "function": "'Yes, And'. Brainstorming without judgment."
+            },
+            {
+                "number": "043",
+                "name": "The Sandbox",
+                "physics_hint": "High D, Low A. Play.",
+                "function": "New hobby. Low stakes curiosity."
+            },
+            {
+                "number": "044",
+                "name": "The Feast",
+                "physics_hint": "High D, Low A. Gluttony.",
+                "function": "Sensory overload. Messy dinner party."
+            },
+            {
+                "number": "045",
+                "name": "The Comedy Club",
+                "physics_hint": "High D, Low A. Absurdity.",
+                "function": "Deconstructing truth through humor."
+            },
+            {
+                "number": "046",
+                "name": "The Storm Chaser",
+                "physics_hint": "High D, Low A. Sublime.",
+                "function": "Walking in rain/snow. Nature's power."
+            },
+            {
+                "number": "047",
+                "name": "The Market",
+                "physics_hint": "High D, Low A. Hunting.",
+                "function": "Flea market/Twitter. Finding signal in noise."
+            },
+            {
+                "number": "048",
+                "name": "The Void (Active)",
+                "physics_hint": "High D, Low A. Confrontation.",
+                "function": "Staring into the abyss. Existential dread."
+            }
+        ]
+    },
+    {
+        "wing": "V. The Forum (Exchange)",
+        "rooms": [
+            {
+                "number": "049",
+                "name": "The River",
+                "physics_hint": "Medium D, Medium A. Anonymity.",
+                "function": "Alone together (Cafe). White noise."
+            },
+            {
+                "number": "050",
+                "name": "The Salon",
+                "physics_hint": "Medium D, Medium A. Dialectic.",
+                "function": "Intellectual debate. Testing ideas."
+            },
+            {
+                "number": "051",
+                "name": "The Campfire",
+                "physics_hint": "Medium D, Low A. Vulnerability.",
+                "function": "Storytelling. Intimacy."
+            },
+            {
+                "number": "052",
+                "name": "The Negotiating Table",
+                "physics_hint": "High D, High A. Conflict.",
+                "function": "Clash of wills. Compromise."
+            },
+            {
+                "number": "053",
+                "name": "The Piazza",
+                "physics_hint": "Low D, Low A. Spectacle.",
+                "function": "People watching. Flânerie."
+            },
+            {
+                "number": "054",
+                "name": "The Broadcast",
+                "physics_hint": "High D, High A. Transmission.",
+                "function": "Publishing, posting, speaking."
+            },
+            {
+                "number": "055",
+                "name": "The Reception",
+                "physics_hint": "Low D, Medium A. Scanning.",
+                "function": "Networking. Surface connection."
+            },
+            {
+                "number": "056",
+                "name": "The Confidant's Room",
+                "physics_hint": "Low D, High A. Resonance.",
+                "function": "1-on-1 trust. Deep connection."
+            },
+            {
+                "number": "057",
+                "name": "The Mentor's Office",
+                "physics_hint": "Low D, High A. Transfer.",
+                "function": "Teaching or being taught."
+            },
+            {
+                "number": "058",
+                "name": "The Team Huddle",
+                "physics_hint": "Medium D, High A. Sync.",
+                "function": "Aligning state vectors."
+            },
+            {
+                "number": "059",
+                "name": "The Public Square",
+                "physics_hint": "Medium D, High A. Civic Duty.",
+                "function": "Voting, volunteering. Participation."
+            },
+            {
+                "number": "060",
+                "name": "The Mask",
+                "physics_hint": "Variable D, Variable A. Simulation.",
+                "function": "Acting, role-playing, avatar."
+            }
+        ]
+    },
+    {
+        "wing": "VI. The Observatory (Metacognition)",
+        "rooms": [
+            {
+                "number": "061",
+                "name": "The Bridge",
+                "physics_hint": "Meta-State. Z-Axis.",
+                "function": "Dashboard. Choosing the room."
+            },
+            {
+                "number": "062",
+                "name": "The Lighthouse",
+                "physics_hint": "Meta-State. Long Horizon.",
+                "function": "Looking at the future. Beaming light."
+            },
+            {
+                "number": "063",
+                "name": "The Museum",
+                "physics_hint": "Meta-State. Past Horizon.",
+                "function": "Curating memory. Narrative construction."
+            },
+            {
+                "number": "064",
+                "name": "The Camera Obscura",
+                "physics_hint": "Meta-State. Detachment.",
+                "function": "Pure observation. 'I am not the wave'."
+            },
+            {
+                "number": "065",
+                "name": "The Simulator",
+                "physics_hint": "Meta-State. Pre-computation.",
+                "function": "Visualizing scenarios. Stoic premeditation."
+            },
+            {
+                "number": "066",
+                "name": "The Satellite",
+                "physics_hint": "Meta-State. Distance.",
+                "function": "Travel (Plane mode). Perspective shift."
+            },
+            {
+                "number": "067",
+                "name": "The Dream Journal",
+                "physics_hint": "Meta-State. Decoding.",
+                "function": "Analyzing subconscious signals."
+            },
+            {
+                "number": "068",
+                "name": "The Tarot / I-Ching",
+                "physics_hint": "Meta-State. Randomization.",
+                "function": "Lateral thinking. Breaking loops."
+            },
+            {
+                "number": "069",
+                "name": "The Silent Retreat",
+                "physics_hint": "Meta-State. Reboot.",
+                "function": "Extended withdrawal. System flush."
+            },
+            {
+                "number": "070",
+                "name": "The Eulogy",
+                "physics_hint": "Meta-State. Urgency.",
+                "function": "Memento Mori. Death contemplation."
+            },
+            {
+                "number": "071",
+                "name": "The Totem",
+                "physics_hint": "Meta-State. Grounding.",
+                "function": "Tactile anchor. Holding an object."
+            },
+            {
+                "number": "072",
+                "name": "The Exit",
+                "physics_hint": "Meta-State. Freedom.",
+                "function": "The door. The ability to leave."
+            }
+        ]
+    }
+]
