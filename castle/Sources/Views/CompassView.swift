@@ -11,6 +11,22 @@ struct CompassView: View {
     @State private var somaticState = SomaticState.default
     @State private var showingChat = false
     @State private var chatMessage = ""
+    @State private var selectedTransitionType: TransitionType? = nil
+    @State private var currentLocation: NavigatorContext.LocationContext = .home
+    
+    enum TransitionType: String, Identifiable {
+        case rest, work, explore, connect
+        var id: String { rawValue }
+        
+        var wingFilter: String {
+            switch self {
+            case .rest: return "I. The Foundation (Restoration)"
+            case .work: return "III. The Machine Shop (Production)"
+            case .explore: return "IV. The Wilderness (Exploration)"
+            case .connect: return "V. The Forum (Exchange)"
+            }
+        }
+    }
     
     var body: some View {
         NavigationStack {
@@ -45,6 +61,21 @@ struct CompassView: View {
             .sheet(isPresented: $showingChat) {
                 NavigatorChatView()
             }
+            .sheet(item: $selectedTransitionType) { type in
+                QuickTransitionSheet(
+                    transitionType: type,
+                    instances: instancesForTransition(type),
+                    roomLoader: roomLoader
+                )
+            }
+        }
+    }
+    
+    private func instancesForTransition(_ type: TransitionType) -> [RoomInstance] {
+        let wingRooms = roomLoader.rooms(inWing: type.wingFilter)
+        let wingRoomIds = Set(wingRooms.map { $0.id })
+        return firebaseManager.roomInstances.filter { instance in
+            wingRoomIds.contains(instance.definitionId)
         }
     }
     
@@ -139,6 +170,19 @@ struct CompassView: View {
                 }
             }
             
+            // Location
+            VStack(alignment: .leading, spacing: 8) {
+                Text("I'm at")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Picker("Location", selection: $currentLocation) {
+                    Text("🏠 Home").tag(NavigatorContext.LocationContext.home)
+                    Text("🏢 Office").tag(NavigatorContext.LocationContext.office)
+                    Text("📍 Elsewhere").tag(NavigatorContext.LocationContext.elsewhere)
+                }
+                .pickerStyle(.segmented)
+            }
+            
             // Diagnose Button
             Button {
                 Task {
@@ -207,36 +251,36 @@ struct CompassView: View {
                 .font(.headline)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                QuickActionButton(
+                CompassQuickAction(
                     title: "Rest",
                     icon: "moon.fill",
                     color: .blue
                 ) {
-                    // Navigate to Foundation wing
+                    selectedTransitionType = .rest
                 }
                 
-                QuickActionButton(
+                CompassQuickAction(
                     title: "Work",
                     icon: "hammer.fill",
                     color: .orange
                 ) {
-                    // Navigate to Machine Shop
+                    selectedTransitionType = .work
                 }
                 
-                QuickActionButton(
+                CompassQuickAction(
                     title: "Explore",
                     icon: "safari",
                     color: .green
                 ) {
-                    // Navigate to Wilderness
+                    selectedTransitionType = .explore
                 }
                 
-                QuickActionButton(
+                CompassQuickAction(
                     title: "Connect",
                     icon: "person.2.fill",
                     color: .purple
                 ) {
-                    // Navigate to Forum
+                    selectedTransitionType = .connect
                 }
             }
         }
@@ -245,10 +289,22 @@ struct CompassView: View {
     // MARK: - Actions
     
     private func diagnose() async {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let timeOfDay = hour < 12 ? "Morning" : hour < 17 ? "Afternoon" : "Evening"
+        
+        // Get today's rituals
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        let todaysBlocks = firebaseManager.recurringBlocks.filter { $0.dayOfWeek == weekday }
+        
         let context = NavigatorContext(
             currentRoom: firebaseManager.activeRoom,
             timeInCurrentRoom: nil,
-            recentRooms: []
+            recentRooms: [],
+            availableInstances: firebaseManager.roomInstances,
+            activeSeason: firebaseManager.activeSeason,
+            todaysRituals: todaysBlocks,
+            timeOfDay: timeOfDay,
+            currentLocation: currentLocation
         )
         
         do {
@@ -279,7 +335,7 @@ struct PhysicsBadge: View {
     }
 }
 
-struct QuickActionButton: View {
+struct CompassQuickAction: View {
     let title: String
     let icon: String
     let color: Color
@@ -371,6 +427,67 @@ struct ChatBubble: View {
                     .background(.secondary.opacity(0.2))
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                 Spacer()
+            }
+        }
+    }
+}
+
+// MARK: - Quick Transition Sheet
+
+struct QuickTransitionSheet: View {
+    let transitionType: CompassView.TransitionType
+    let instances: [RoomInstance]
+    let roomLoader: RoomLoader
+    
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var firebaseManager = FirebaseManager.shared
+    
+    var body: some View {
+        NavigationStack {
+            Group {
+                if instances.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "mappin.slash")
+                            .font(.largeTitle)
+                            .foregroundStyle(.secondary)
+                        Text("No \(transitionType.wingFilter) rooms set up")
+                            .font(.headline)
+                        Text("Add instances from the Blueprint tab first")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                } else {
+                    List(instances) { instance in
+                        if let definition = roomLoader.room(byId: instance.definitionId) {
+                            NavigationLink {
+                                InstanceDetailView(definition: definition, instance: instance)
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(definition.name)
+                                            .font(.headline)
+                                        Text(instance.variantName)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    if instance.isActive {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(.green)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle(transitionType.rawValue.capitalized)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
             }
         }
     }

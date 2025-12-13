@@ -19,30 +19,42 @@ final class NavigatorService: ObservableObject {
     // MARK: - Navigator Prompts
     
     private let navigatorSystemPrompt = """
-    You are The Navigator, a somatic coach for The 72 Rooms attention management system.
+    You are The Navigator, a Nietzschean guide to self-overcoming within The 72 Rooms attention system.
     
-    Your role is to:
-    1. DIAGNOSE the user's current somatic state (Energy level, Structure level)
-    2. MAP their state to the Dionysian/Apollonian Phase Space
-    3. RECOMMEND a room transition based on "Momentum" rules:
-       - Don't jump from Low to High energy instantly
-       - Honor the body's need for gradual transitions
-       - Consider current friction levels
+    Your philosophy:
+    - The soul is a MULTIPLICITY of drives, not a unity
+    - Each somatic state is a WILL expressing itself - honor it, don't suppress it
+    - Depletion is not weakness - it is digestion after a feast of intensity
+    - The highest life AFFIRMS even its suffering (amor fati)
+    - Self-overcoming is not fighting oneself but BECOMING who you are
     
-    The 72 Rooms are organized into 6 Wings:
-    - I. Foundation (Restoration): Low D, Low A - Sleep, Bath, Garden
-    - II. Administration (Governance): Low D, High A - Planning, Review
-    - III. Machine Shop (Production): High D, High A - Deep Work, Flow
-    - IV. Wilderness (Exploration): High D, Low A - Chaos, Discovery
-    - V. Forum (Exchange): Medium D/A - Social, Dialogue
-    - VI. Observatory (Metacognition): Meta - Choosing the room
+    Your role:
+    1. DIAGNOSE which drives are currently ascending and which are exhausted
+    2. CRITIQUE any ressentiment - the denial of one's actual condition
+    3. RECOMMEND a room that serves the ASCENDING drive, not the comfortable one
+    4. Consider the ETERNAL RETURN: would you will this transition infinitely?
     
-    Always respond with:
-    1. Your diagnosis of their current state
-    2. A recommended room (by name and number)
-    3. Brief guidance for the transition
+    The 6 Wings as modes of the Will:
+    - I. Foundation: The will to RESTORATION - not weakness but preparation for war
+    - II. Administration: The will to ORDER - the Apollonian dream that shapes chaos
+    - III. Machine Shop: The will to POWER at its peak - creation, intensity, overcoming
+    - IV. Wilderness: The will to CHAOS - the Dionysian dissolution that precedes creation
+    - V. Forum: The will to AGON - the noble contest, testing ideas against others
+    - VI. Observatory: The will to PERSPECTIVE - the view from height that relativizes all
     
-    Be concise and direct. Speak like a wise facility manager.
+    Momentum as physiology:
+    - The body has its reasons. Respect the gradual accumulation of force.
+    - Don't jump from exhaustion to mania - this is the hysteria of the weak
+    - Friction reveals where ressentiment hides ("I would work if only...")
+    
+    Response:
+    1. **Diagnosis**: Name the drives at play. No pity, only truth.
+    2. **Critique**: Where is the will denying itself?
+    3. **Command**: A room FROM THEIR LIST that serves ascending life
+    4. **The Way**: How to walk there with affirmation
+    
+    Speak as one who has looked into the abyss and found it creative.
+    Never recommend escape - only transformation through rooms they have built.
     """
     
     // MARK: - Public Methods
@@ -106,21 +118,70 @@ final class NavigatorService: ObservableObject {
     private func buildPrompt(state: SomaticState, context: NavigatorContext) -> String {
         var parts: [String] = []
         
-        parts.append("Current somatic state:")
+        // Current somatic state
+        parts.append("## Current Somatic State")
         parts.append("- Energy: \(state.energy.rawValue)")
         parts.append("- Tension: \(state.tension.rawValue)")
         parts.append("- Mood: \(state.mood.rawValue)")
         
+        // Time context
+        if !context.timeOfDay.isEmpty {
+            parts.append("- Time of day: \(context.timeOfDay)")
+        }
+        
+        // Current position
         if let currentRoom = context.currentRoom {
-            parts.append("\nCurrently in: \(currentRoom.variantName) (Room \(currentRoom.definitionId))")
-            parts.append("Time in room: \(context.timeInCurrentRoom ?? 0) minutes")
+            parts.append("\n## Currently In")
+            parts.append("Room: \(currentRoom.variantName) (Room \(currentRoom.definitionId))")
+            if let time = context.timeInCurrentRoom {
+                parts.append("Time here: \(time) minutes")
+            }
+        } else {
+            parts.append("\n## Currently In")
+            parts.append("Not in any room")
         }
         
+        // Location context
+        if context.currentLocation != .unknown {
+            parts.append("Physical location: \(context.currentLocation.rawValue)")
+        }
+        
+        // Recent rooms
         if !context.recentRooms.isEmpty {
-            parts.append("\nRecent rooms visited: \(context.recentRooms.joined(separator: ", "))")
+            parts.append("\n## Recent Transitions")
+            parts.append(context.recentRooms.joined(separator: " → "))
         }
         
-        parts.append("\nWhat room should I go to?")
+        // Available room instances
+        if !context.availableInstances.isEmpty {
+            parts.append("\n## Your Available Rooms")
+            for instance in context.availableInstances.prefix(15) {
+                let locationHint = instance.variantName.lowercased().contains("home") ? "(home)" :
+                                   instance.variantName.lowercased().contains("office") ? "(office)" : ""
+                parts.append("- \(instance.variantName) [Room \(instance.definitionId)] \(locationHint)")
+            }
+        }
+        
+        // Season focus
+        if let season = context.activeSeason {
+            parts.append("\n## Current Season")
+            parts.append("Season: \(season.name)")
+            parts.append("Focus: \(season.primaryWing.displayName)")
+            if let notes = season.notes, !notes.isEmpty {
+                parts.append("Intent: \(notes.prefix(100))...")
+            }
+        }
+        
+        // Today's rituals
+        if !context.todaysRituals.isEmpty {
+            parts.append("\n## Today's Scheduled Rituals")
+            for block in context.todaysRituals.prefix(5) {
+                parts.append("- \(block.roomName) @ \(block.timeString)")
+            }
+        }
+        
+        parts.append("\n## Question")
+        parts.append("Based on my current state and context, what room should I transition to?")
         
         return parts.joined(separator: "\n")
     }
@@ -175,6 +236,20 @@ struct NavigatorContext {
     var currentRoom: RoomInstance?
     var timeInCurrentRoom: Int?
     var recentRooms: [String] = []
+    
+    // Enhanced context
+    var availableInstances: [RoomInstance] = []     // User's room instances
+    var activeSeason: Season?                        // Current season
+    var todaysRituals: [RecurringBlock] = []        // Today's scheduled blocks
+    var timeOfDay: String = ""                       // Morning/Afternoon/Evening
+    var currentLocation: LocationContext = .unknown // Physical location
+    
+    enum LocationContext: String {
+        case home = "home"
+        case office = "office"
+        case elsewhere = "elsewhere"
+        case unknown = "unknown"
+    }
 }
 
 struct NavigatorResponse {

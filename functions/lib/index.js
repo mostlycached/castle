@@ -37,7 +37,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.seedRooms = exports.diagnoseState = exports.callGemini = void 0;
+exports.generateTrack = exports.generateAlbumConcept = exports.createRoomInstance = exports.seedRooms = exports.diagnoseState = exports.callGemini = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const generative_ai_1 = require("@google/generative-ai");
 const params_1 = require("firebase-functions/params");
@@ -48,13 +48,37 @@ const db = admin.firestore();
 // Gemini API key stored securely in Firebase Secrets
 const geminiApiKey = (0, params_1.defineSecret)("GEMINI_API_KEY");
 /**
+ * Check if a user is on the whitelist
+ * Whitelist is stored in Firestore: config/access -> allowedUsers array
+ */
+async function checkWhitelist(uid) {
+    const configDoc = await db.collection("config").doc("access").get();
+    if (!configDoc.exists) {
+        // If no config exists, deny access (fail-safe)
+        return false;
+    }
+    const allowedUsers = configDoc.data()?.allowedUsers || [];
+    return allowedUsers.includes(uid);
+}
+/**
+ * Validate auth and whitelist - throws if not authorized
+ */
+async function requireAuthorization(request) {
+    if (!request.auth) {
+        throw new https_1.HttpsError("unauthenticated", "Must be authenticated");
+    }
+    const isAllowed = await checkWhitelist(request.auth.uid);
+    if (!isAllowed) {
+        throw new https_1.HttpsError("permission-denied", "User not authorized");
+    }
+    return request.auth.uid;
+}
+/**
  * Call Gemini for text generation
  * Used by NavigatorService for somatic diagnosis
  */
 exports.callGemini = (0, https_1.onCall)({ secrets: [geminiApiKey] }, async (request) => {
-    if (!request.auth) {
-        throw new https_1.HttpsError("unauthenticated", "Must be authenticated");
-    }
+    await requireAuthorization(request);
     const { prompt, systemPrompt, model = "gemini-2.0-flash" } = request.data;
     if (!prompt) {
         throw new https_1.HttpsError("invalid-argument", "Prompt is required");
@@ -79,9 +103,7 @@ exports.callGemini = (0, https_1.onCall)({ secrets: [geminiApiKey] }, async (req
  * Specialized endpoint for The Navigator
  */
 exports.diagnoseState = (0, https_1.onCall)({ secrets: [geminiApiKey] }, async (request) => {
-    if (!request.auth) {
-        throw new https_1.HttpsError("unauthenticated", "Must be authenticated");
-    }
+    await requireAuthorization(request);
     const { somaticState, currentRoom, recentRooms } = request.data;
     const navigatorPrompt = `
 You are The Navigator, a somatic coach for The 72 Rooms attention management system.
@@ -219,12 +241,10 @@ const ROOM_DATA = [
 ];
 /**
  * Seed room instances to Firestore for authenticated user
+ * Uses auto-generated doc IDs to allow multiple instances per room class
  */
 exports.seedRooms = (0, https_1.onCall)(async (request) => {
-    if (!request.auth) {
-        throw new https_1.HttpsError("unauthenticated", "Must be authenticated");
-    }
-    const userId = request.auth.uid;
+    const userId = await requireAuthorization(request);
     const userRoomsRef = db.collection("users").doc(userId).collection("rooms");
     let seededCount = 0;
     for (const room of ROOM_DATA) {
@@ -242,9 +262,11 @@ exports.seedRooms = (0, https_1.onCall)(async (request) => {
             liturgy: room.liturgy,
             wing: room.wing,
             name: room.name,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
         };
-        await userRoomsRef.doc(room.id).set(instanceData, { merge: true });
+        // Use add() for auto-generated ID - allows multiple instances per class
+        await userRoomsRef.add(instanceData);
         seededCount++;
     }
     return {
@@ -252,4 +274,244 @@ exports.seedRooms = (0, https_1.onCall)(async (request) => {
         message: `Seeded ${seededCount} room instances for user ${userId}`
     };
 });
+/**
+ * Create a new room instance for a specific definition
+ * Allows users to add multiple instances of the same room class
+ */
+exports.createRoomInstance = (0, https_1.onCall)(async (request) => {
+    const userId = await requireAuthorization(request);
+    const { definitionId, variantName, requiredInventory = [] } = request.data;
+    if (!definitionId || !variantName) {
+        throw new https_1.HttpsError("invalid-argument", "definitionId and variantName are required");
+    }
+    const userRoomsRef = db.collection("users").doc(userId).collection("rooms");
+    const instanceData = {
+        definition_id: definitionId,
+        variant_name: variantName,
+        familiarity_score: 0.0,
+        health_score: 1.0,
+        current_friction: "Medium",
+        required_inventory: requiredInventory,
+        is_active: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+    const docRef = await userRoomsRef.add(instanceData);
+    return {
+        success: true,
+        instanceId: docRef.id,
+        message: `Created instance "${variantName}" for room ${definitionId}`
+    };
+});
+// ElevenLabs API key for music generation
+const elevenLabsApiKey = (0, params_1.defineSecret)("ELEVENLABS_API_KEY");
+/**
+ * Generate an album concept with 8 diverse track descriptions using Gemini
+ * This should be called before generating individual tracks
+ */
+exports.generateAlbumConcept = (0, https_1.onCall)({ secrets: [geminiApiKey] }, async (request) => {
+    const uid = await requireAuthorization(request);
+    const { instanceId, musicContext, roomName } = request.data;
+    if (!instanceId || !musicContext || !roomName) {
+        throw new https_1.HttpsError("invalid-argument", "instanceId, musicContext, and roomName are required");
+    }
+    const genAI = new generative_ai_1.GoogleGenerativeAI(geminiApiKey.value());
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const prompt = `You are composing an 8-track ambient music album for a room called "${roomName}".
+
+Context:
+- Scene: ${musicContext.scene_setting}
+- Location inspiration: ${musicContext.location_inspiration}
+- Mood: ${musicContext.mood}
+- Tempo: ${musicContext.tempo}
+- Instruments: ${musicContext.instruments?.join(", ") || "ambient pads"}
+- Somatic elements: ${musicContext.somatic_elements?.join(", ") || "presence"}
+- Found sounds: ${musicContext.found_sounds?.join(", ") || "none"}
+${musicContext.narrative_arc ? `- Narrative arc: ${musicContext.narrative_arc}` : ""}
+
+Create an album concept with 8 DISTINCT tracks. Each track should:
+1. Have a unique character/mood that progresses through the album
+2. Feature different instrument combinations
+3. Include varied found sounds or textural elements
+4. Follow a narrative arc (opening → development → climax → resolution)
+
+Respond with JSON only:
+{
+    "albumTitle": "Album title",
+    "albumConcept": "2-3 sentence album concept",
+    "tracks": [
+        {
+            "trackNumber": 1,
+            "title": "Track title",
+            "prompt": "Detailed ElevenLabs music generation prompt for this specific track. Include instruments, mood, tempo, textures, and any found sounds. Be specific about how this track differs from others.",
+            "narrativePhase": "opening/rising/building/peak/reflection/descent/resolution/closing"
+        }
+    ]
+}`;
+    try {
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        // Parse JSON from response
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error("Could not parse album concept JSON");
+        }
+        const albumConcept = JSON.parse(jsonMatch[0]);
+        // Store album concept in Firestore
+        const instanceRef = db.collection("users").doc(uid).collection("rooms").doc(instanceId);
+        await instanceRef.update({
+            album_concept: albumConcept,
+            music_context: musicContext
+        });
+        return {
+            success: true,
+            albumConcept: albumConcept,
+            message: `Generated album concept: ${albumConcept.albumTitle}`
+        };
+    }
+    catch (error) {
+        console.error("Failed to generate album concept:", error);
+        throw new https_1.HttpsError("internal", `Failed to generate album concept: ${error}`);
+    }
+});
+/**
+ * Generate a single track for a room instance
+ * Uses ElevenLabs Music API - call once per track
+ */
+exports.generateTrack = (0, https_1.onCall)({ secrets: [elevenLabsApiKey], timeoutSeconds: 300 }, async (request) => {
+    const uid = await requireAuthorization(request);
+    const { instanceId, musicContext, roomName, trackNumber } = request.data;
+    if (!instanceId || !musicContext || !trackNumber) {
+        throw new https_1.HttpsError("invalid-argument", "instanceId, musicContext, and trackNumber are required");
+    }
+    const storage = admin.storage().bucket();
+    // Check if we have an album concept with pre-generated prompts
+    const instanceRef = db.collection("users").doc(uid).collection("rooms").doc(instanceId);
+    const doc = await instanceRef.get();
+    const albumConcept = doc.data()?.album_concept;
+    let prompt;
+    let trackTitle;
+    if (albumConcept?.tracks) {
+        // Use the pre-generated prompt from album concept
+        const trackConcept = albumConcept.tracks.find((t) => t.trackNumber === trackNumber);
+        if (trackConcept) {
+            prompt = trackConcept.prompt;
+            trackTitle = trackConcept.title;
+        }
+        else {
+            prompt = buildMusicPrompt(musicContext, trackNumber, roomName);
+            trackTitle = `${roomName} - Track ${trackNumber}`;
+        }
+    }
+    else {
+        // Fallback to basic prompt building
+        prompt = buildMusicPrompt(musicContext, trackNumber, roomName);
+        trackTitle = `${roomName} - Track ${trackNumber}`;
+    }
+    try {
+        // Call ElevenLabs Music API
+        const response = await fetch("https://api.elevenlabs.io/v1/music/generate", {
+            method: "POST",
+            headers: {
+                "xi-api-key": elevenLabsApiKey.value(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                prompt: prompt,
+                duration_seconds: 240, // 4 minutes
+                output_format: "mp3_44100_128"
+            })
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`ElevenLabs API error for track ${trackNumber}:`, errorText);
+            throw new https_1.HttpsError("internal", `ElevenLabs API error: ${errorText}`);
+        }
+        // Get audio data
+        const audioBuffer = await response.arrayBuffer();
+        const audioData = Buffer.from(audioBuffer);
+        // Upload to Firebase Storage
+        const fileName = `users/${uid}/music/${instanceId}/track_${trackNumber.toString().padStart(2, "0")}.mp3`;
+        const file = storage.file(fileName);
+        await file.save(audioData, {
+            contentType: "audio/mpeg",
+            metadata: {
+                prompt: prompt,
+                trackNumber: trackNumber.toString(),
+                generatedAt: new Date().toISOString()
+            }
+        });
+        // Make file publicly accessible
+        await file.makePublic();
+        const publicUrl = `https://storage.googleapis.com/${storage.name}/${fileName}`;
+        const track = {
+            url: publicUrl,
+            title: trackTitle,
+            duration_seconds: 240,
+            prompt: prompt,
+            is_downloaded: false
+        };
+        // Update the room instance - append to existing playlist
+        const instanceRef = db.collection("users").doc(uid).collection("rooms").doc(instanceId);
+        const doc = await instanceRef.get();
+        const existingPlaylist = doc.data()?.playlist || [];
+        // Remove any existing track with same number and add new one
+        const updatedPlaylist = existingPlaylist.filter((t) => !t.title.endsWith(`Track ${trackNumber}`));
+        updatedPlaylist.push(track);
+        // Sort by track number
+        updatedPlaylist.sort((a, b) => {
+            const aNum = parseInt(a.title.split("Track ")[1]) || 0;
+            const bNum = parseInt(b.title.split("Track ")[1]) || 0;
+            return aNum - bNum;
+        });
+        await instanceRef.update({
+            playlist: updatedPlaylist,
+            playlist_generated_at: admin.firestore.FieldValue.serverTimestamp(),
+            music_context: musicContext
+        });
+        console.log(`Generated track ${trackNumber} for ${roomName}`);
+        return {
+            success: true,
+            track: track,
+            message: `Generated track ${trackNumber} for ${roomName}`
+        };
+    }
+    catch (error) {
+        console.error(`Failed to generate track ${trackNumber}:`, error);
+        throw new https_1.HttpsError("internal", `Failed to generate track: ${error}`);
+    }
+});
+/**
+ * Build a rich prompt for ElevenLabs based on MusicContext
+ */
+function buildMusicPrompt(context, trackNumber, roomName) {
+    const parts = [];
+    // Base context
+    parts.push(`Ambient music for ${roomName}, a ${context.scene_setting} experience.`);
+    // Location
+    parts.push(`Inspired by: ${context.location_inspiration}.`);
+    // Instruments
+    if (context.instruments && context.instruments.length > 0) {
+        parts.push(`Instruments: ${context.instruments.join(", ")}.`);
+    }
+    // Atmosphere
+    parts.push(`Mood: ${context.mood}. Tempo: ${context.tempo}.`);
+    // Somatic
+    if (context.somatic_elements && context.somatic_elements.length > 0) {
+        parts.push(`Evoking sensations of: ${context.somatic_elements.join(", ")}.`);
+    }
+    // Found sounds
+    if (context.found_sounds && context.found_sounds.length > 0) {
+        parts.push(`Subtly integrate found sounds: ${context.found_sounds.join(", ")}.`);
+    }
+    // Narrative progression
+    if (context.narrative_arc) {
+        const phases = ["opening", "rising", "building", "peak", "reflection", "descent", "resolution", "closing"];
+        const phase = phases[Math.min(trackNumber - 1, phases.length - 1)];
+        parts.push(`Narrative phase: ${phase} (${context.narrative_arc}).`);
+    }
+    // Track variation
+    parts.push(`Track ${trackNumber} of 8. Duration: 4 minutes. Seamless, loopable transitions.`);
+    return parts.join(" ");
+}
 //# sourceMappingURL=index.js.map

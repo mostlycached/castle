@@ -93,6 +93,10 @@ final class RoomLoader: ObservableObject {
         allRooms.first { $0.id == id }
     }
     
+    func definition(for id: String) -> RoomDefinition? {
+        room(byId: id)
+    }
+    
     func rooms(inWing wingName: String) -> [RoomDefinition] {
         wings.first { $0.wing == wingName }?.rooms ?? []
     }

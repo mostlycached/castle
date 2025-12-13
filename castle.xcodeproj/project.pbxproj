@@ -9,35 +9,67 @@
 /* Begin PBXBuildFile section */
 		084B4ECE5E21CBFD601A594D /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 98F70B2505A0A9241C52C37D /* FirebaseFirestore */; };
 		0D960020ABAEFC9B32D6AAA0 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 4A53C25B3BBC75B2FA0D64F6 /* FirebaseAuth */; };
+		11473A9AFCB0BF79E29D004C /* RoomTransitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFF02BB9E70C32BC2074C8B /* RoomTransitionView.swift */; };
 		1EFCB3D75F7FB97B80A379F6 /* RoomDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36A073C01F03F1F2A932400 /* RoomDetailView.swift */; };
 		26909604EFCEC5D888FD5D58 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FBF4FFA5BD5425517F430E3 /* ContentView.swift */; };
 		2F0E8DB0380EE3A67A226DAA /* BlueprintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C5B7CF86E4CD42B06588135 /* BlueprintView.swift */; };
+		2FF350357D0B6623D2BEC7D7 /* RadarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B713A0505CF744D8D4FB558 /* RadarChart.swift */; };
+		31D1330AA2CAE768D2DDB749 /* EngineerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292835EA761391C6EAAE52F2 /* EngineerService.swift */; };
+		334F248EF9EC6F5088BA8121 /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52846B4DF3E35CCF1E8FCC27 /* SessionView.swift */; };
+		3F7199513C4E9015C85FFC50 /* SeasonProposalSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7823F2F4F29CC3ED1152815D /* SeasonProposalSheet.swift */; };
+		45218F9EFF1D38C524732170 /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40FB2921D3D7EBBEE2F56D40 /* WorkshopView.swift */; };
 		46370068B64AF9A9CDA12729 /* RoomInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B288E9B1EEBA6821E04F54B /* RoomInstance.swift */; };
+		4AE12D1DCB1CFB0E5102805B /* StrategistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0E7BC74463340721AEAB641 /* StrategistView.swift */; };
+		50333EA7DD2CB3E2F72A8D97 /* RoomGuideService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83ACEA2FAB2122435071C8D9 /* RoomGuideService.swift */; };
 		6F9B331CAC84A9C8B326ACB9 /* rooms_data.json in Resources */ = {isa = PBXBuildFile; fileRef = 16CCD75558C122588D4DEF6F /* rooms_data.json */; };
 		861C2D3C62535542BD31AAEF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D6A3E3060CE3296BAE823401 /* GoogleService-Info.plist */; };
 		87BAF107D7DC802FA12FB703 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EA0FE70BA5A7990CE3EC543 /* CompassView.swift */; };
+		8C5D0343C2275C6429B43B24 /* SeasonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AC5CA3323A8ADC45D6A1E6 /* SeasonDetailView.swift */; };
 		8CDF665AB81A1B723B6BD2C1 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = F3AF00276DC491820AFEA1E7 /* FirebaseFunctions */; };
 		8F4F0A7952653442C76D7AAB /* RoomDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A2FC3DE5584E06CEB8CCBF /* RoomDefinition.swift */; };
+		994C7074C0A4E02E0D7F3AF7 /* MusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 634B1A2B7E9E03A29414D757 /* MusicService.swift */; };
+		A4017B59C2F1717FFD4447C6 /* StrategistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E03608869425ECD690B058 /* StrategistService.swift */; };
 		A8FDE87CAD7A6BAB5A57BE9A /* RoomCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1144F27C47B8F51ED75785 /* RoomCardView.swift */; };
 		B6B1E1ACBE5B39FB6ACD319A /* CastleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE057E02A447BDBD013BB80 /* CastleApp.swift */; };
+		CA0A35E2184CFD833710F8CE /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 591289DF542BC489E4A2AFA0 /* Session.swift */; };
+		CA58B20BF7F799926CE7CC66 /* Season.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2901CEC4A386DB70EDC6F01 /* Season.swift */; };
 		CC317498206824AD6648D619 /* FirebaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2668C8B7DA80A3EACD38A015 /* FirebaseManager.swift */; };
+		D2CD82D9617C99C2E578AC61 /* RecurringBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B9A834B79846A270FEEFB29 /* RecurringBlock.swift */; };
 		D9D6550E74BCDD48B76BB856 /* NavigatorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4446A54CA91E8FFEBDFB9442 /* NavigatorService.swift */; };
+		FD6108431BFDB25AB11A4F05 /* PlannedSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A41B86760CD1E47E8DB26E18 /* PlannedSession.swift */; };
+		FDE28A9282AD6D3489FCDB17 /* InstanceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1891B342770CCD5F255904BE /* InstanceDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		16CCD75558C122588D4DEF6F /* rooms_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = rooms_data.json; sourceTree = "<group>"; };
+		1891B342770CCD5F255904BE /* InstanceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstanceDetailView.swift; sourceTree = "<group>"; };
 		2668C8B7DA80A3EACD38A015 /* FirebaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseManager.swift; sourceTree = "<group>"; };
+		292835EA761391C6EAAE52F2 /* EngineerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineerService.swift; sourceTree = "<group>"; };
+		40FB2921D3D7EBBEE2F56D40 /* WorkshopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkshopView.swift; sourceTree = "<group>"; };
 		4446A54CA91E8FFEBDFB9442 /* NavigatorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigatorService.swift; sourceTree = "<group>"; };
 		48A2FC3DE5584E06CEB8CCBF /* RoomDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomDefinition.swift; sourceTree = "<group>"; };
+		4AFF02BB9E70C32BC2074C8B /* RoomTransitionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomTransitionView.swift; sourceTree = "<group>"; };
+		52846B4DF3E35CCF1E8FCC27 /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
+		56AC5CA3323A8ADC45D6A1E6 /* SeasonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonDetailView.swift; sourceTree = "<group>"; };
+		591289DF542BC489E4A2AFA0 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
+		5B713A0505CF744D8D4FB558 /* RadarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarChart.swift; sourceTree = "<group>"; };
+		634B1A2B7E9E03A29414D757 /* MusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicService.swift; sourceTree = "<group>"; };
 		6B288E9B1EEBA6821E04F54B /* RoomInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomInstance.swift; sourceTree = "<group>"; };
+		7823F2F4F29CC3ED1152815D /* SeasonProposalSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonProposalSheet.swift; sourceTree = "<group>"; };
+		78E03608869425ECD690B058 /* StrategistService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrategistService.swift; sourceTree = "<group>"; };
 		7905BF9E6CA1DB04857245F4 /* castle.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = castle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C5B7CF86E4CD42B06588135 /* BlueprintView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintView.swift; sourceTree = "<group>"; };
 		7EA0FE70BA5A7990CE3EC543 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
+		83ACEA2FAB2122435071C8D9 /* RoomGuideService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomGuideService.swift; sourceTree = "<group>"; };
+		8B9A834B79846A270FEEFB29 /* RecurringBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringBlock.swift; sourceTree = "<group>"; };
 		9AE057E02A447BDBD013BB80 /* CastleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CastleApp.swift; sourceTree = "<group>"; };
 		9FBF4FFA5BD5425517F430E3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A2901CEC4A386DB70EDC6F01 /* Season.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Season.swift; sourceTree = "<group>"; };
+		A41B86760CD1E47E8DB26E18 /* PlannedSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannedSession.swift; sourceTree = "<group>"; };
 		B36A073C01F03F1F2A932400 /* RoomDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomDetailView.swift; sourceTree = "<group>"; };
 		CD1144F27C47B8F51ED75785 /* RoomCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomCardView.swift; sourceTree = "<group>"; };
 		D6A3E3060CE3296BAE823401 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		E0E7BC74463340721AEAB641 /* StrategistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrategistView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,8 +89,12 @@
 		2CB1F2EC1AF23637D2A76CBB /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				292835EA761391C6EAAE52F2 /* EngineerService.swift */,
 				2668C8B7DA80A3EACD38A015 /* FirebaseManager.swift */,
+				634B1A2B7E9E03A29414D757 /* MusicService.swift */,
 				4446A54CA91E8FFEBDFB9442 /* NavigatorService.swift */,
+				83ACEA2FAB2122435071C8D9 /* RoomGuideService.swift */,
+				78E03608869425ECD690B058 /* StrategistService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -100,6 +136,14 @@
 			path = castle;
 			sourceTree = "<group>";
 		};
+		80D442217A938934F2C634F6 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				5B713A0505CF744D8D4FB558 /* RadarChart.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		947CC146F6878F3F7A818ED9 = {
 			isa = PBXGroup;
 			children = (
@@ -113,8 +157,12 @@
 		9B56EB5C9233C6C9D7BA3A57 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				A41B86760CD1E47E8DB26E18 /* PlannedSession.swift */,
+				8B9A834B79846A270FEEFB29 /* RecurringBlock.swift */,
 				48A2FC3DE5584E06CEB8CCBF /* RoomDefinition.swift */,
 				6B288E9B1EEBA6821E04F54B /* RoomInstance.swift */,
+				A2901CEC4A386DB70EDC6F01 /* Season.swift */,
+				591289DF542BC489E4A2AFA0 /* Session.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -133,8 +181,16 @@
 			children = (
 				7C5B7CF86E4CD42B06588135 /* BlueprintView.swift */,
 				7EA0FE70BA5A7990CE3EC543 /* CompassView.swift */,
+				1891B342770CCD5F255904BE /* InstanceDetailView.swift */,
 				CD1144F27C47B8F51ED75785 /* RoomCardView.swift */,
 				B36A073C01F03F1F2A932400 /* RoomDetailView.swift */,
+				4AFF02BB9E70C32BC2074C8B /* RoomTransitionView.swift */,
+				56AC5CA3323A8ADC45D6A1E6 /* SeasonDetailView.swift */,
+				7823F2F4F29CC3ED1152815D /* SeasonProposalSheet.swift */,
+				52846B4DF3E35CCF1E8FCC27 /* SessionView.swift */,
+				E0E7BC74463340721AEAB641 /* StrategistView.swift */,
+				40FB2921D3D7EBBEE2F56D40 /* WorkshopView.swift */,
+				80D442217A938934F2C634F6 /* Components */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -222,12 +278,28 @@
 				B6B1E1ACBE5B39FB6ACD319A /* CastleApp.swift in Sources */,
 				87BAF107D7DC802FA12FB703 /* CompassView.swift in Sources */,
 				26909604EFCEC5D888FD5D58 /* ContentView.swift in Sources */,
+				31D1330AA2CAE768D2DDB749 /* EngineerService.swift in Sources */,
 				CC317498206824AD6648D619 /* FirebaseManager.swift in Sources */,
+				FDE28A9282AD6D3489FCDB17 /* InstanceDetailView.swift in Sources */,
+				994C7074C0A4E02E0D7F3AF7 /* MusicService.swift in Sources */,
 				D9D6550E74BCDD48B76BB856 /* NavigatorService.swift in Sources */,
+				FD6108431BFDB25AB11A4F05 /* PlannedSession.swift in Sources */,
+				2FF350357D0B6623D2BEC7D7 /* RadarChart.swift in Sources */,
+				D2CD82D9617C99C2E578AC61 /* RecurringBlock.swift in Sources */,
 				A8FDE87CAD7A6BAB5A57BE9A /* RoomCardView.swift in Sources */,
 				8F4F0A7952653442C76D7AAB /* RoomDefinition.swift in Sources */,
 				1EFCB3D75F7FB97B80A379F6 /* RoomDetailView.swift in Sources */,
+				50333EA7DD2CB3E2F72A8D97 /* RoomGuideService.swift in Sources */,
 				46370068B64AF9A9CDA12729 /* RoomInstance.swift in Sources */,
+				11473A9AFCB0BF79E29D004C /* RoomTransitionView.swift in Sources */,
+				CA58B20BF7F799926CE7CC66 /* Season.swift in Sources */,
+				8C5D0343C2275C6429B43B24 /* SeasonDetailView.swift in Sources */,
+				3F7199513C4E9015C85FFC50 /* SeasonProposalSheet.swift in Sources */,
+				CA0A35E2184CFD833710F8CE /* Session.swift in Sources */,
+				334F248EF9EC6F5088BA8121 /* SessionView.swift in Sources */,
+				A4017B59C2F1717FFD4447C6 /* StrategistService.swift in Sources */,
+				4AE12D1DCB1CFB0E5102805B /* StrategistView.swift in Sources */,
+				45218F9EFF1D38C524732170 /* WorkshopView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

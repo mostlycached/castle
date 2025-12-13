@@ -18,9 +18,9 @@ struct ContentView: View {
                     Label("Blueprint", systemImage: "building.2.crop.circle")
                 }
             
-            TimelineView()
+            StrategistView()
                 .tabItem {
-                    Label("Timeline", systemImage: "calendar")
+                    Label("Strategist", systemImage: "map.fill")
                 }
             
             WorkshopView()
@@ -30,26 +30,6 @@ struct ContentView: View {
         }
         .task {
             await firebaseManager.signInAnonymously()
-        }
-    }
-}
-
-// MARK: - Placeholder Views
-
-struct TimelineView: View {
-    var body: some View {
-        NavigationStack {
-            Text("Timeline")
-                .navigationTitle("Timeline")
-        }
-    }
-}
-
-struct WorkshopView: View {
-    var body: some View {
-        NavigationStack {
-            Text("Workshop")
-                .navigationTitle("Workshop")
         }
     }
 }

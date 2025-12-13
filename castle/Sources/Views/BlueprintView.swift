@@ -9,6 +9,7 @@ struct BlueprintView: View {
     
     @State private var searchText = ""
     @State private var selectedWing: String?
+    @State private var showOnlyActive = false
     
     var body: some View {
         NavigationStack {
@@ -16,6 +17,11 @@ struct BlueprintView: View {
                 LazyVStack(alignment: .leading, spacing: 24) {
                     // Wing Filter
                     wingFilterSection
+                    
+                    // Active Filter Toggle
+                    Toggle("Only rooms with instances", isOn: $showOnlyActive)
+                        .font(.subheadline)
+                        .padding(.horizontal, 4)
                     
                     // Rooms Grid
                     ForEach(filteredWings) { wing in
@@ -43,27 +49,36 @@ struct BlueprintView: View {
     // MARK: - Computed Properties
     
     private var filteredWings: [Wing] {
-        roomLoader.wings.filter { wing in
+        roomLoader.wings.compactMap { wing in
             if let selected = selectedWing, selected != wing.wing {
-                return false
+                return nil
             }
-            if searchText.isEmpty {
-                return true
+            
+            let rooms = filteredRooms(in: wing)
+            if rooms.isEmpty {
+                return nil
             }
-            return wing.rooms.contains { room in
-                room.name.localizedCaseInsensitiveContains(searchText) ||
-                room.function.localizedCaseInsensitiveContains(searchText)
-            }
+            
+            return Wing(wing: wing.wing, rooms: rooms)
         }
     }
     
     private func filteredRooms(in wing: Wing) -> [RoomDefinition] {
-        if searchText.isEmpty {
-            return wing.rooms
-        }
-        return wing.rooms.filter {
-            $0.name.localizedCaseInsensitiveContains(searchText) ||
-            $0.function.localizedCaseInsensitiveContains(searchText)
+        wing.rooms.filter { room in
+            // Search filter
+            if !searchText.isEmpty {
+                let matchesSearch = room.name.localizedCaseInsensitiveContains(searchText) ||
+                                    room.function.localizedCaseInsensitiveContains(searchText)
+                if !matchesSearch { return false }
+            }
+            
+            // Active instances filter
+            if showOnlyActive {
+                let hasInstances = !firebaseManager.instances(for: room.id).isEmpty
+                if !hasInstances { return false }
+            }
+            
+            return true
         }
     }
     
