@@ -522,21 +522,98 @@ struct AddInstanceSheet: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var firebaseManager = FirebaseManager.shared
     
+    // Basic
     @State private var variantName = ""
     @State private var inventory = ""
+    @State private var constraints = ""
+    
+    // Liturgy
+    @State private var showLiturgy = false
+    @State private var liturgyEntry = ""
+    @State private var liturgySteps = ""
+    @State private var liturgyExit = ""
+    
+    // Collision
+    @State private var showCollision = false
+    @State private var alienDomain = ""
+    @State private var synthesis = ""
+    @State private var tensionPoints = ""
+    
     @State private var isLoading = false
     
     var body: some View {
         NavigationStack {
             Form {
+                // MARK: Basic Info
                 Section("Location") {
-                    TextField("e.g., 'Standing Desk Home', 'Office Corner'", text: $variantName)
+                    TextField("e.g., 'Standing Desk Home', 'Coffee Shop Corner'", text: $variantName)
                 }
                 
                 Section("Inventory") {
                     TextField("Required items (comma-separated)", text: $inventory)
                 }
                 
+                Section("Constraints") {
+                    TextField("Rules for this space (comma-separated)", text: $constraints)
+                }
+                
+                // MARK: Liturgy Toggle
+                Section {
+                    Toggle("Add Liturgy", isOn: $showLiturgy.animation())
+                } footer: {
+                    Text("The ritual choreography of entry, practice, and exit")
+                }
+                
+                if showLiturgy {
+                    Section("Liturgy") {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Entry").font(.caption).foregroundStyle(.secondary)
+                            TextField("How you enter this room...", text: $liturgyEntry, axis: .vertical)
+                                .lineLimit(2...4)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Steps").font(.caption).foregroundStyle(.secondary)
+                            TextField("The steps of the practice (one per line)", text: $liturgySteps, axis: .vertical)
+                                .lineLimit(3...6)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Exit").font(.caption).foregroundStyle(.secondary)
+                            TextField("How you leave this room...", text: $liturgyExit, axis: .vertical)
+                                .lineLimit(2...4)
+                        }
+                    }
+                }
+                
+                // MARK: Collision Toggle
+                Section {
+                    Toggle("Add Collision", isOn: $showCollision.animation())
+                } footer: {
+                    Text("Collide this room with an alien domain to create something new")
+                }
+                
+                if showCollision {
+                    Section("Collision") {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Alien Domain").font(.caption).foregroundStyle(.secondary)
+                            TextField("e.g., 'Hospital Recovery', 'Rave Culture'", text: $alienDomain)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Synthesis").font(.caption).foregroundStyle(.secondary)
+                            TextField("How the worlds merge...", text: $synthesis, axis: .vertical)
+                                .lineLimit(2...4)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Tension Points").font(.caption).foregroundStyle(.secondary)
+                            TextField("Where they conflict (comma-separated)", text: $tensionPoints)
+                        }
+                    }
+                }
+                
+                // MARK: Info
                 Section {
                     Text("You can have multiple instances of \"\(definition.name)\" in different locations.")
                         .font(.caption)
@@ -561,13 +638,50 @@ struct AddInstanceSheet: View {
     
     private func addInstance() async {
         isLoading = true
-        let items = inventory.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        let inventoryItems = inventory.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        let constraintItems = constraints.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
         
-        try? await firebaseManager.createInstance(
-            definitionId: definition.id,
-            variantName: variantName,
-            inventory: items
-        )
+        // Build liturgy if enabled
+        var liturgy: RoomLiturgy? = nil
+        if showLiturgy && !liturgyEntry.isEmpty {
+            let steps = liturgySteps.split(separator: "\n").map { String($0).trimmingCharacters(in: .whitespaces) }
+            liturgy = RoomLiturgy(entry: liturgyEntry, steps: steps, exit: liturgyExit)
+        }
+        
+        // Build collision if enabled
+        var collision: CollisionData? = nil
+        if showCollision && !alienDomain.isEmpty {
+            let tensions = tensionPoints.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+            collision = CollisionData(
+                alienDomain: alienDomain,
+                alienConstraints: [], // Could add alien constraints field if needed
+                synthesis: synthesis,
+                tensionPoints: tensions
+            )
+        }
+        
+        // Build variant name with collision indicator
+        let finalVariantName = collision != nil ? "\(variantName) × \(alienDomain)" : variantName
+        
+        if let collision = collision {
+            // Create collision instance
+            try? await firebaseManager.createCollisionInstance(
+                definitionId: definition.id,
+                variantName: finalVariantName,
+                inventory: inventoryItems,
+                constraints: constraintItems,
+                collision: collision
+            )
+        } else {
+            // Create standard instance
+            try? await firebaseManager.createInstance(
+                definitionId: definition.id,
+                variantName: variantName,
+                inventory: inventoryItems,
+                constraints: constraintItems,
+                liturgy: liturgy
+            )
+        }
         
         dismiss()
     }

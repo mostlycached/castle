@@ -32,11 +32,19 @@ struct EngineerResponse: Codable {
         let inventory: [InventoryItem]?
         let constraint: String?
         let health: Double?
+        let collision: CollisionActionData?
         
         struct InventoryItem: Codable {
             let name: String
             let status: String?
             let isCritical: Bool?
+        }
+        
+        struct CollisionActionData: Codable {
+            let alienDomain: String
+            let alienConstraints: [String]?
+            let synthesis: String?
+            let tensionPoints: [String]?
         }
     }
 }
@@ -64,8 +72,9 @@ final class EngineerService: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // Build context about current instances
+        // Build context about current instances and available definitions
         let instanceContext = buildInstanceContext()
+        let definitionsContext = buildDefinitionsContext()
         
         let conversationContext = messages.suffix(6).map { msg in
             switch msg.role {
@@ -75,6 +84,8 @@ final class EngineerService: ObservableObject {
         }.joined(separator: "\n")
         
         let prompt = """
+        \(definitionsContext)
+        
         \(instanceContext)
         
         \(conversationContext)
@@ -87,6 +98,7 @@ final class EngineerService: ObservableObject {
             "action": null
         }
         
+        CRITICAL: When creating instances, you MUST use an exact definitionId from the AVAILABLE ROOM CLASSES list above.
         Only include an action (non-null) if the user EXPLICITLY asks you to create or modify something with words like "create it", "make it", "do it", "let's go". Otherwise action should be null.
         """
         
@@ -195,6 +207,42 @@ final class EngineerService: ObservableObject {
                 } catch {
                     messages.append(EngineerMessage(role: .engineer, content: "❌ Failed to update health"))
                 }
+            }
+        
+        case "create_collision":
+            // Create a COLLISION instance - hybrid of room class × alien domain
+            guard let definitionId = action.definitionId,
+                  let variantName = action.variantName,
+                  let collisionData = action.collision else {
+                messages.append(EngineerMessage(role: .engineer, content: "❌ Missing collision data"))
+                return
+            }
+            
+            do {
+                let inventoryNames = action.inventory?.map { $0.name } ?? []
+                
+                // Build collision constraints (merge alien constraints with any regular constraints)
+                var allConstraints = action.constraint != nil ? [action.constraint!] : []
+                allConstraints.append(contentsOf: collisionData.alienConstraints ?? [])
+                
+                // Create the collision data object
+                let collision = CollisionData(
+                    alienDomain: collisionData.alienDomain,
+                    alienConstraints: collisionData.alienConstraints ?? [],
+                    synthesis: collisionData.synthesis ?? "",
+                    tensionPoints: collisionData.tensionPoints ?? []
+                )
+                
+                try await firebaseManager.createCollisionInstance(
+                    definitionId: definitionId,
+                    variantName: variantName,
+                    inventory: inventoryNames,
+                    constraints: allConstraints,
+                    collision: collision
+                )
+                messages.append(EngineerMessage(role: .engineer, content: "✅ Created collision: **\(variantName)**\n\n🌀 *\(collision.synthesis)*"))
+            } catch {
+                messages.append(EngineerMessage(role: .engineer, content: "❌ Failed to create collision: \(error.localizedDescription)"))
             }
             
         default:
@@ -366,6 +414,87 @@ final class EngineerService: ObservableObject {
         return []
     }
     
+    // MARK: - Inventory-Based Room Recommendations
+    
+    func generateRoomRecommendations(inventory: [GlobalInventoryItem]) async -> [RoomRecommendation] {
+        isLoading = true
+        defer { isLoading = false }
+        
+        let inventoryList = inventory.map { "\($0.category.icon) \($0.name)" }.joined(separator: ", ")
+        let definitionsContext = buildDefinitionsContext()
+        
+        let prompt = """
+        USER'S INVENTORY:
+        \(inventoryList)
+        
+        \(definitionsContext)
+        
+        Based on this inventory, suggest 5 room instances the user could create.
+        For each room, identify:
+        1. Which of their items can be used
+        2. What additional items they might need
+        3. A potential collision (alien domain) that could make it interesting
+        
+        Respond in JSON format:
+        {
+            "recommendations": [
+                {
+                    "definitionId": "exact_id_from_list",
+                    "roomName": "Room Name",
+                    "reason": "Brief explanation of how their inventory enables this room",
+                    "existingInventory": ["items they already have for this"],
+                    "missingInventory": ["items they would need to acquire"],
+                    "collisionSuggestion": "Optional: An interesting alien domain to collide with"
+                }
+            ]
+        }
+        """
+        
+        do {
+            let result = try await functions.httpsCallable("callGemini").call([
+                "prompt": prompt,
+                "systemPrompt": "You are an inventory analyst matching user possessions to rooms. Be practical and specific. Prioritize rooms where they already have most items.",
+                "model": "gemini-2.0-flash"
+            ])
+            
+            if let data = result.data as? [String: Any],
+               let text = data["text"] as? String {
+                
+                if let jsonData = extractJSON(from: text) {
+                    struct RecommendationsResponse: Codable {
+                        let recommendations: [RecommendationItem]
+                        
+                        struct RecommendationItem: Codable {
+                            let definitionId: String
+                            let roomName: String
+                            let reason: String
+                            let existingInventory: [String]?
+                            let missingInventory: [String]?
+                            let collisionSuggestion: String?
+                        }
+                    }
+                    
+                    if let response = try? JSONDecoder().decode(RecommendationsResponse.self, from: jsonData) {
+                        return response.recommendations.map { item in
+                            RoomRecommendation(
+                                definitionId: item.definitionId,
+                                roomName: item.roomName,
+                                reason: item.reason,
+                                existingInventory: item.existingInventory ?? [],
+                                missingInventory: item.missingInventory ?? [],
+                                collisionSuggestion: item.collisionSuggestion
+                            )
+                        }
+                    }
+                }
+            }
+        } catch {
+            print("Room recommendations error: \(error)")
+        }
+        
+        return []
+    }
+    
     func clearMessages() {
         messages = []
         generatedInstance = nil
@@ -389,65 +518,89 @@ final class EngineerService: ObservableObject {
         return context
     }
     
+    private func buildDefinitionsContext() -> String {
+        let definitions = roomLoader.allRooms.prefix(20)
+        if definitions.isEmpty {
+            return "No room definitions loaded."
+        }
+        
+        var context = "AVAILABLE ROOM CLASSES (use these exact IDs when creating instances):\n"
+        for def in definitions {
+            context += "- ID: \"\(def.id)\" = \(def.name)\n"
+        }
+        return context
+    }
+    
     private var engineerSystemPrompt: String {
         """
-        You are The Engineer, a thoughtful collaborator for designing attention spaces.
+        You are The Engineer, a focused collaborator for designing attention spaces.
         
-        YOUR PHILOSOPHY:
-        - Every room is a POSSIBILITY before it becomes a THING
-        - Good design comes from CONVERSATION, not prescription
-        - Inventory is about AVAILABILITY - what does the user actually have access to?
-        - Travel and logistics MATTER - a perfect room you can't reach is no room at all
-        - Constraints emerge from lived reality, not abstract ideals
+        YOUR CONVERSATION FLOW (follow these phases in order):
         
-        YOUR APPROACH - THE EXPLORATION PHASE:
-        When a user mentions wanting to create a room (like "I want a drumming room"), DO NOT immediately propose a solution.
-        Instead, EXPLORE with them:
+        PHASE 1 - QUICK DISCOVERY (1-2 exchanges max):
+        - What room class fits? (match to an ID from the list)
+        - Where will it physically happen?
         
-        1. THE WHY: What draws them to this practice? What would it give them?
-        2. THE WHERE: Where could this happen? Home? Rented space? Friend's house? Studio?
-        3. THE WHAT: What equipment do they have? Need to buy? Can borrow?
-        4. THE WHEN: What times are realistic? Neighbors? Noise constraints?
-        5. THE HOW: Travel time? Cost? Regularity possible?
+        PHASE 2 - LOGISTICS CHECK (1 exchange):
+        - Key inventory items?
+        - Any constraints or time considerations?
         
-        Ask questions ONE or TWO at a time. Don't overwhelm.
+        PHASE 3 - OFFER COLLISION OPTION (1 exchange):
+        Present two paths:
+        a) VARIATION: "[Room Name] at [Location]" - simple personalization
+        b) COLLISION: Suggest 2-3 alien domains that could create interesting hybrids
         
-        ONLY create an action when the user EXPLICITLY says something like:
-        - "Let's do it"
-        - "Create the room"
-        - "I'm ready"
-        - "Make it"
+        PHASE 4 - CONFIRM AND CREATE:
+        Summarize what will be created and ask for confirmation.
+        When they confirm, create the instance.
         
-        Until then, you are a BRAINSTORMING PARTNER, not a room factory.
+        CRITICAL RULES:
+        - Do NOT endlessly explore. After 3-4 exchanges, propose something concrete.
+        - Always progress toward a decision.
+        - If user seems ready, offer to create even if you haven't covered everything.
         
-        THE SIX WINGS (for reference when needed):
-        - I. Foundation: Rest, recovery, restoration
-        - II. Administration: Planning, review, governance
-        - III. Machine Shop: Production, deep work, craft
-        - IV. Wilderness: Exploration, chaos, discovery
-        - V. Forum: Exchange, dialogue, social
-        - VI. Observatory: Metacognition, choosing, overview
+        COLLISION creates a HYBRID INSTANCE with:
+        - synthesis: How the two worlds merge
+        - alienConstraints: Rules from the alien domain
+        - tensionPoints: Where they productively conflict
         
-        RESPONSE FORMAT:
-        For EXPLORATION (most conversations):
+        === RESPONSE FORMAT ===
+        
+        For conversation:
         {
-            "message": "Your conversational response with questions or observations",
+            "message": "Your response progressing toward a decision",
             "action": null
         }
         
-        For CREATION (only when user explicitly requests):
+        For COLLISION CREATION:
         {
-            "message": "Confirming the creation...",
+            "message": "Creating your collision instance...",
+            "action": {
+                "type": "create_collision",
+                "definitionId": "exact_id_from_list",
+                "variantName": "Location × Alien Domain",
+                "inventory": [{"name": "item", "status": "Operational", "isCritical": true}],
+                "collision": {
+                    "alienDomain": "Domain Name",
+                    "alienConstraints": ["constraint1", "constraint2"],
+                    "synthesis": "How they merge",
+                    "tensionPoints": ["tension1", "tension2"]
+                }
+            }
+        }
+        
+        For STANDARD CREATION:
+        {
+            "message": "Creating your room instance...",
             "action": {
                 "type": "create_instance",
-                "definitionId": "room_id",
+                "definitionId": "exact_id_from_list",
                 "variantName": "name",
                 "inventory": [{"name": "item", "status": "Operational", "isCritical": true}]
             }
         }
         
-        Remember: You are helping someone BUILD A LIFE, not just configure an app.
-        Ask about their real constraints. Be curious. Take your time.
+        ONLY create when user confirms. Progress toward that confirmation quickly.
         """
     }
     

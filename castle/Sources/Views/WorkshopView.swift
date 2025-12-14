@@ -12,12 +12,20 @@ struct WorkshopView: View {
     @State private var showingInstanceGenerator = false
     @State private var selectedDefinition: RoomDefinition?
     
+    // Inventory tab state
+    @State private var showingAddInventory = false
+    @State private var newItemName = ""
+    @State private var newItemCategory: GlobalInventoryItem.InventoryCategory = .other
+    @State private var newItemNotes = ""
+    @State private var roomRecommendations: [RoomRecommendation] = []
+    @State private var isGeneratingRecommendations = false
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 // Tab selector
                 Picker("View", selection: $selectedTab) {
-                    Text("Health").tag(0)
+                    Text("Inventory").tag(0)
                     Text("Scouting").tag(1)
                     Text("Engineer").tag(2)
                     Text("Account").tag(3)
@@ -28,7 +36,7 @@ struct WorkshopView: View {
                 // Content
                 switch selectedTab {
                 case 0:
-                    healthDashboard
+                    inventoryTab
                 case 1:
                     scoutingView
                 case 2:
@@ -36,7 +44,7 @@ struct WorkshopView: View {
                 case 3:
                     accountView
                 default:
-                    healthDashboard
+                    inventoryTab
                 }
             }
             .navigationTitle("Workshop")
@@ -88,6 +96,29 @@ struct WorkshopView: View {
                 
                 Divider()
                 
+                // Export Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Export Data")
+                        .font(.headline)
+                    
+                    Button {
+                        exportToCSV()
+                    } label: {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Export All Rooms to CSV")
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Text("Exports all room instances with observations, liturgy, collision data, and session stats.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Divider()
+                
                 // App Info
                 VStack(alignment: .leading, spacing: 8) {
                     Text("The 72 Rooms")
@@ -101,52 +132,238 @@ struct WorkshopView: View {
         }
     }
     
-    // MARK: - Health Dashboard
+    private func exportToCSV() {
+        let instances = firebaseManager.roomInstances
+        
+        // CSV Header
+        var csv = "Room Name,Variant Name,Health %,Mastery Level,Total Minutes,Friction,Inventory,Constraints,Observations,Liturgy Entry,Liturgy Steps,Liturgy Exit,Collision Domain,Collision Synthesis,Collision Tensions,Last Visited\n"
+        
+        for instance in instances {
+            let def = roomLoader.definition(for: instance.definitionId)
+            let roomName = def?.name ?? instance.definitionId
+            let variantName = instance.variantName.replacingOccurrences(of: ",", with: ";")
+            let health = Int(instance.computedHealth * 100)
+            let masteryLevel = instance.masteryLevelName
+            let totalMinutes = instance.totalMinutes
+            let friction = instance.currentFriction.rawValue
+            let inventory = instance.inventory.map { $0.name }.joined(separator: "; ")
+            let constraints = instance.constraints.joined(separator: "; ")
+            let observations = instance.observations.joined(separator: "; ").replacingOccurrences(of: ",", with: ";").replacingOccurrences(of: "\n", with: " ")
+            
+            // Liturgy
+            let liturgyEntry = instance.liturgy?.entry.replacingOccurrences(of: ",", with: ";") ?? ""
+            let liturgySteps = instance.liturgy?.steps.joined(separator: "; ") ?? ""
+            let liturgyExit = instance.liturgy?.exit.replacingOccurrences(of: ",", with: ";") ?? ""
+            
+            // Collision
+            let collisionDomain = instance.collision?.alienDomain ?? ""
+            let collisionSynthesis = instance.collision?.synthesis.replacingOccurrences(of: ",", with: ";") ?? ""
+            let collisionTensions = instance.collision?.tensionPoints.joined(separator: "; ") ?? ""
+            
+            // Last visited
+            let lastVisited = instance.lastVisited?.formatted(date: .abbreviated, time: .shortened) ?? ""
+            
+            csv += "\"\(roomName)\",\"\(variantName)\",\(health),\"\(masteryLevel)\",\(totalMinutes),\"\(friction)\",\"\(inventory)\",\"\(constraints)\",\"\(observations)\",\"\(liturgyEntry)\",\"\(liturgySteps)\",\"\(liturgyExit)\",\"\(collisionDomain)\",\"\(collisionSynthesis)\",\"\(collisionTensions)\",\"\(lastVisited)\"\n"
+        }
+        
+        // Share the CSV
+        let activityVC = UIActivityViewController(
+            activityItems: [csv],
+            applicationActivities: nil
+        )
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(activityVC, animated: true)
+        }
+    }
     
-    private var healthDashboard: some View {
+    // MARK: - Inventory Tab
+    
+    private var inventoryTab: some View {
         ScrollView {
-            if firebaseManager.roomInstances.isEmpty {
-                emptyState
-            } else {
-                LazyVStack(spacing: 12) {
-                    // Sort by health (lowest first)
-                    ForEach(sortedInstances) { instance in
-                        if let definition = roomLoader.definition(for: instance.definitionId) {
-                            NavigationLink {
-                                InstanceDetailView(definition: definition, initialInstance: instance)
-                            } label: {
-                                HealthCard(instance: instance, definition: definition)
+            VStack(spacing: 20) {
+                // Add Item Section
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Your Inventory")
+                        .font(.headline)
+                    
+                    HStack {
+                        TextField("Add item (e.g., Fender Stratocaster)", text: $newItemName)
+                            .textFieldStyle(.roundedBorder)
+                        
+                        Picker("", selection: $newItemCategory) {
+                            ForEach(GlobalInventoryItem.InventoryCategory.allCases, id: \.self) { cat in
+                                Text(cat.icon).tag(cat)
                             }
-                            .buttonStyle(.plain)
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 60)
+                        
+                        Button {
+                            Task { await addItem() }
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                        }
+                        .disabled(newItemName.isEmpty)
+                    }
+                }
+                
+                // Inventory List
+                if firebaseManager.globalInventory.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "shippingbox")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.secondary)
+                        Text("No items yet")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Text("Add items you own to discover rooms")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(.vertical, 40)
+                } else {
+                    LazyVStack(spacing: 8) {
+                        ForEach(firebaseManager.globalInventory) { item in
+                            HStack {
+                                Text(item.category.icon)
+                                    .font(.title2)
+                                
+                                VStack(alignment: .leading) {
+                                    Text(item.name)
+                                        .font(.body)
+                                    if let notes = item.notes, !notes.isEmpty {
+                                        Text(notes)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                Button(role: .destructive) {
+                                    if let id = item.id {
+                                        Task { try? await firebaseManager.deleteInventoryItem(id) }
+                                    }
+                                } label: {
+                                    Image(systemName: "trash")
+                                        .font(.caption)
+                                }
+                            }
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                     }
                 }
-                .padding()
+                
+                Divider()
+                
+                // Generate Recommendations
+                VStack(spacing: 12) {
+                    Button {
+                        Task { await generateRoomRecommendations() }
+                    } label: {
+                        HStack {
+                            if isGeneratingRecommendations {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            } else {
+                                Image(systemName: "lightbulb.fill")
+                            }
+                            Text("Generate Room Ideas")
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(firebaseManager.globalInventory.isEmpty || isGeneratingRecommendations)
+                    
+                    Text("AI will suggest rooms based on your inventory")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                // Recommendations Display
+                if !roomRecommendations.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Room Suggestions")
+                            .font(.headline)
+                        
+                        ForEach(roomRecommendations) { rec in
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text(rec.roomName)
+                                        .font(.subheadline.bold())
+                                    Spacer()
+                                    if rec.isComplete {
+                                        Text("✅ Ready")
+                                            .font(.caption)
+                                            .foregroundStyle(.green)
+                                    }
+                                }
+                                
+                                Text(rec.reason)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                
+                                if !rec.existingInventory.isEmpty {
+                                    HStack {
+                                        Text("Have:")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                        Text(rec.existingInventory.joined(separator: ", "))
+                                            .font(.caption2)
+                                            .foregroundStyle(.green)
+                                    }
+                                }
+                                
+                                if !rec.missingInventory.isEmpty {
+                                    HStack {
+                                        Text("Need:")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                        Text(rec.missingInventory.joined(separator: ", "))
+                                            .font(.caption2)
+                                            .foregroundStyle(.orange)
+                                    }
+                                }
+                                
+                                if let collision = rec.collisionSuggestion {
+                                    HStack {
+                                        Text("💥")
+                                        Text(collision)
+                                            .font(.caption)
+                                            .foregroundStyle(.purple)
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
+                    }
+                }
             }
+            .padding()
         }
     }
     
-    private var sortedInstances: [RoomInstance] {
-        firebaseManager.roomInstances
-            .filter { $0.id != nil }  // Only include instances with valid IDs
-            .sorted { $0.computedHealth < $1.computedHealth }
+    private func addItem() async {
+        guard !newItemName.isEmpty else { return }
+        let item = GlobalInventoryItem(name: newItemName, category: newItemCategory, notes: newItemNotes.isEmpty ? nil : newItemNotes)
+        try? await firebaseManager.addInventoryItem(item)
+        newItemName = ""
+        newItemNotes = ""
     }
     
-    private var emptyState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "wrench.and.screwdriver")
-                .font(.system(size: 60))
-                .foregroundStyle(.secondary)
-            
-            Text("No Instances Yet")
-                .font(.headline)
-            
-            Text("Create instances in the Blueprint tab or use the Scouting view to find locations")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding(40)
+    private func generateRoomRecommendations() async {
+        isGeneratingRecommendations = true
+        defer { isGeneratingRecommendations = false }
+        
+        let recommendations = await engineer.generateRoomRecommendations(inventory: firebaseManager.globalInventory)
+        roomRecommendations = recommendations
     }
     
     // MARK: - Scouting View
@@ -245,7 +462,8 @@ struct WorkshopView: View {
             // Quick actions
             VStack(spacing: 8) {
                 QuickActionButton(title: "Analyze my lowest-health room", icon: "heart.text.square") {
-                    if let weakest = sortedInstances.first {
+                    let sorted = firebaseManager.roomInstances.sorted { $0.computedHealth < $1.computedHealth }
+                    if let weakest = sorted.first {
                         Task {
                             await analyzeWeakestRoom(weakest)
                         }

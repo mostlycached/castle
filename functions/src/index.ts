@@ -66,7 +66,7 @@ export const callGemini = onCall(
 
         try {
             let result;
-            
+
             if (imageBase64) {
                 // Multimodal request with image
                 const imagePart = {
@@ -80,7 +80,7 @@ export const callGemini = onCall(
                 // Text-only request
                 result = await geminiModel.generateContent(prompt);
             }
-            
+
             const text = result.response.text();
             return { text };
         } catch (error) {
@@ -337,7 +337,7 @@ export const generateAlbumConcept = onCall(
         const genAI = new GoogleGenerativeAI(geminiApiKey.value());
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-        const prompt = `You are composing an 8-track ambient music album for a room called "${roomName}".
+        const prompt = `You are composing an 8-track music album for a room called "${roomName}".
 
 Context:
 - Scene: ${musicContext.scene_setting}
@@ -349,11 +349,39 @@ Context:
 - Found sounds: ${musicContext.found_sounds?.join(", ") || "none"}
 ${musicContext.narrative_arc ? `- Narrative arc: ${musicContext.narrative_arc}` : ""}
 
-Create an album concept with 8 DISTINCT tracks. Each track should:
-1. Have a unique character/mood that progresses through the album
+Create an album concept with 8 DISTINCT tracks. Each track MUST be 3 minutes long.
+
+CRITICAL: Each track prompt MUST include an explicit TIMESTAMP-BASED STRUCTURE. Choose the most appropriate structure for each track based on the room's mood and the track's narrative phase.
+
+AVAILABLE SONG STRUCTURES (choose the best fit for each track):
+
+1. RONDO (ABACADA) - Ritual/liturgical feel, keeps returning to home theme:
+   "Structure: A-Home (0:00-0:30) → B-Departure (0:30-1:00) → A-Return (1:00-1:20) → C-Exploration (1:20-1:50) → A-Return (1:50-2:10) → D-Climax (2:10-2:40) → A-Final (2:40-3:00)"
+
+2. THROUGH-COMPOSED (ABCDEF) - Continuous evolution, no repetition, journeys:
+   "Structure: Departure (0:00-0:30) → Encounter (0:30-1:00) → Conflict (1:00-1:30) → Transformation (1:30-2:00) → Integration (2:00-2:30) → Arrival (2:30-3:00)"
+
+3. ARCH FORM (ABCBA) - Symmetrical, meditative, starts and ends the same:
+   "Structure: Descent (0:00-0:30) → Deepening (0:30-1:00) → Nadir (1:00-1:30) → Rising (1:30-2:15) → Ascent (2:15-3:00)"
+
+4. SONATA FORM - Drama, dialectics, high-energy production:
+   "Structure: Exposition-Theme1 (0:00-0:30) → Exposition-Theme2 (0:30-1:00) → Development-Collision (1:00-1:45) → Development-Transform (1:45-2:15) → Recapitulation (2:15-3:00)"
+
+5. SPIRAL/ADDITIVE - Layers accumulate, building intensity:
+   "Structure: Layer1 (0:00-0:30) → +Layer2 (0:30-1:00) → +Layer3 (1:00-1:30) → +Layer4 (1:30-2:00) → Full-Texture (2:00-2:30) → Strip-Back (2:30-3:00)"
+
+6. DRONE + EVENT - Static bed with floating incidents, ambient/restoration:
+   "Structure: Drone-Establish (0:00-0:30) → Event1 (0:40-0:50) → Drone (0:50-1:10) → Event2 (1:15-1:30) → Event3 (1:45-2:00) → Events-Cluster (2:00-2:30) → Drone-Alone (2:30-3:00)"
+
+7. CALL AND RESPONSE - Dialogue, social/exchange spaces:
+   "Structure: Call (0:00-0:20) → Response (0:20-0:40) → Call-Varies (0:40-1:00) → Response-Evolves (1:00-1:20) → Overlap-Duet (1:20-2:00) → Unison (2:00-2:30) → Echo-Fade (2:30-3:00)"
+
+Each track should:
+1. Choose the structure that best fits its narrative phase and the room's character
 2. Feature different instrument combinations
-3. Include varied found sounds or textural elements
-4. Follow a narrative arc (opening → development → climax → resolution)
+3. Include varied found sounds or textural elements  
+4. Use EXPLICIT TIMESTAMPS covering the full 3 minutes
+5. End the prompt with "Length: 3:00."
 
 Respond with JSON only:
 {
@@ -363,7 +391,8 @@ Respond with JSON only:
         {
             "trackNumber": 1,
             "title": "Track title",
-            "prompt": "Detailed ElevenLabs music generation prompt for this specific track. Include instruments, mood, tempo, textures, and any found sounds. Be specific about how this track differs from others.",
+            "prompt": "Detailed prompt with instruments, mood, tempo, textures, found sounds. Include chosen structure with timestamps. Length: 3:00.",
+            "structureType": "rondo|through-composed|arch|sonata|spiral|drone-event|call-response",
             "narrativePhase": "opening/rising/building/peak/reflection/descent/resolution/closing"
         }
     ]
@@ -450,7 +479,7 @@ export const generateTrack = onCall(
                 },
                 body: JSON.stringify({
                     prompt: prompt,
-                    duration_seconds: 240, // 4 minutes
+                    duration_seconds: 180, // 3 minutes to match prompted structure
                     output_format: "mp3_44100_128"
                 })
             });
@@ -574,8 +603,17 @@ function buildMusicPrompt(context: {
         parts.push(`Narrative phase: ${phase} (${context.narrative_arc}).`);
     }
 
-    // Track variation
-    parts.push(`Track ${trackNumber} of 8. Duration: 4 minutes. Seamless, loopable transitions.`);
+    // Track variation and structure
+    parts.push(`Track ${trackNumber} of 8.`);
+
+    // Add explicit structure to ensure full length
+    const structures = [
+        "Structure: Intro (0:00-0:30, atmospheric build) → Main Theme (0:30-1:15, melody develops) → Variation (1:15-2:00, textural shift) → Climax (2:00-2:30, full intensity) → Outro (2:30-3:00, gentle fade). Length: 3:00.",
+        "Structure: Opening (0:00-0:25, sparse elements) → Development (0:25-1:00, layers build) → Core (1:00-1:45, primary theme) → Bridge (1:45-2:15, contrast) → Resolution (2:15-3:00, peaceful close). Length: 3:00.",
+        "Structure: Prelude (0:00-0:20, single instrument) → Expansion (0:20-0:50, ensemble grows) → Peak (0:50-1:30, maximum density) → Descent (1:30-2:15, gradual reduction) → Coda (2:15-3:00, echoes fade). Length: 3:00."
+    ];
+    parts.push(structures[(trackNumber - 1) % structures.length]);
+    parts.push("Full song structure required.");
 
     return parts.join(" ");
 }

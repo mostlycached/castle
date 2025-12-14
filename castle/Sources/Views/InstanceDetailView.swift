@@ -1131,6 +1131,12 @@ struct MusicContextEditor: View {
                                     .onTapGesture {
                                         useCustom = true
                                     }
+                                    .onChange(of: customPrompt) { _, newValue in
+                                        // Automatically switch to custom mode when user types
+                                        if !newValue.isEmpty {
+                                            useCustom = true
+                                        }
+                                    }
                                 
                                 Text("Describe the atmosphere, instruments, mood, tempo, sounds...")
                                     .font(.caption)

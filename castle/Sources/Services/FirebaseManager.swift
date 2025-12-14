@@ -23,6 +23,7 @@ final class FirebaseManager: ObservableObject {
     
     @Published var isAuthenticated = false
     @Published var roomInstances: [RoomInstance] = []
+    @Published var globalInventory: [GlobalInventoryItem] = []
     
     private init() {
         if FirebaseApp.app() != nil {
@@ -40,6 +41,7 @@ final class FirebaseManager: ObservableObject {
                 self?.isAuthenticated = user != nil
                 if user != nil {
                     await self?.fetchRoomInstances()
+                    await self?.fetchGlobalInventory()
                 }
             }
         }
@@ -77,6 +79,51 @@ final class FirebaseManager: ObservableObject {
         } catch {
             print("Error fetching rooms: \(error)")
         }
+    }
+    
+    // MARK: - Global Inventory Operations
+    
+    func fetchGlobalInventory() async {
+        guard let db = db, let uid = currentUserId else { return }
+        
+        do {
+            let snapshot = try await db.collection("users")
+                .document(uid)
+                .collection("inventory")
+                .order(by: "addedAt", descending: true)
+                .getDocuments()
+            
+            globalInventory = snapshot.documents.compactMap { doc in
+                var item = try? doc.data(as: GlobalInventoryItem.self)
+                item?.id = doc.documentID
+                return item
+            }
+        } catch {
+            print("Error fetching inventory: \(error)")
+        }
+    }
+    
+    func addInventoryItem(_ item: GlobalInventoryItem) async throws {
+        guard let db = db, let uid = currentUserId else { return }
+        
+        _ = try db.collection("users")
+            .document(uid)
+            .collection("inventory")
+            .addDocument(from: item)
+        
+        await fetchGlobalInventory()
+    }
+    
+    func deleteInventoryItem(_ itemId: String) async throws {
+        guard let db = db, let uid = currentUserId else { return }
+        
+        try await db.collection("users")
+            .document(uid)
+            .collection("inventory")
+            .document(itemId)
+            .delete()
+        
+        await fetchGlobalInventory()
     }
     
     func saveRoomInstance(_ instance: RoomInstance) async throws {
@@ -328,6 +375,34 @@ final class FirebaseManager: ObservableObject {
         // Save to Firestore directly
         try await saveRoomInstance(instance)
         print("Created instance: \(variantName)")
+    }
+    
+    /// Create a COLLISION instance - hybrid of room class × alien domain
+    func createCollisionInstance(
+        definitionId: String,
+        variantName: String,
+        inventory: [String] = [],
+        constraints: [String] = [],
+        collision: CollisionData
+    ) async throws {
+        // Create instance with collision data
+        var instance = RoomInstance(
+            definitionId: definitionId,
+            variantName: variantName,
+            requiredInventory: inventory,
+            isActive: false,
+            constraints: constraints
+        )
+        
+        // Set the collision - this is what makes it a hybrid
+        instance.collision = collision
+        
+        // Use the synthesis as the evocative why
+        instance.evocativeWhy = collision.synthesis
+        
+        // Save to Firestore
+        try await saveRoomInstance(instance)
+        print("Created collision instance: \(variantName) (× \(collision.alienDomain))")
     }
     
     // MARK: - Sessions

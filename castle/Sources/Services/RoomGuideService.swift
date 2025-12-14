@@ -67,16 +67,22 @@ final class RoomGuideService: ObservableObject {
             let systemPrompt = customPrompt ?? buildSystemPrompt(instance: instance, definition: definition)
             let conversationContext = buildConversationContext()
             
+            let promptText = text.isEmpty && image != nil 
+                ? "What do you see in this image? Analyze it from your philosophical perspective." 
+                : text
+            
             var callData: [String: Any] = [
-                "prompt": "\(conversationContext)\n\nUser: \(text.isEmpty && image != nil ? "What do you see in this image? Analyze it from your philosophical perspective." : text)",
+                "prompt": "\(conversationContext)\n\nUser: \(promptText)",
                 "systemPrompt": systemPrompt,
                 "model": "gemini-2.0-flash"
             ]
             
-            // Add base64 image if present
-            if let image = image,
-               let imageData = image.jpegData(compressionQuality: 0.7) {
-                callData["imageBase64"] = imageData.base64EncodedString()
+            // Process image on background thread to avoid blocking main thread
+            if let image = image {
+                let base64String = await processImageInBackground(image)
+                if let base64 = base64String {
+                    callData["imageBase64"] = base64
+                }
             }
             
             let result = try await functions.httpsCallable("callGemini").call(callData)
@@ -101,6 +107,35 @@ final class RoomGuideService: ObservableObject {
         } catch {
             print("Room Guide error: \(error)")
             messages.append(GuideMessage(role: .guide, content: "I'm having trouble connecting. Take a breath and focus on the present moment."))
+        }
+    }
+    
+    /// Process image on background thread to avoid blocking main actor
+    private nonisolated func processImageInBackground(_ image: UIImage) async -> String? {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                // Resize image to max 1024px to reduce processing time
+                let maxSize: CGFloat = 1024
+                let scale = min(maxSize / image.size.width, maxSize / image.size.height, 1.0)
+                let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+                
+                let resizedImage: UIImage
+                if scale < 1.0 {
+                    UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+                    image.draw(in: CGRect(origin: .zero, size: newSize))
+                    resizedImage = UIGraphicsGetImageFromCurrentImageContext() ?? image
+                    UIGraphicsEndImageContext()
+                } else {
+                    resizedImage = image
+                }
+                
+                // Compress and encode
+                if let imageData = resizedImage.jpegData(compressionQuality: 0.6) {
+                    continuation.resume(returning: imageData.base64EncodedString())
+                } else {
+                    continuation.resume(returning: nil)
+                }
+            }
         }
     }
     

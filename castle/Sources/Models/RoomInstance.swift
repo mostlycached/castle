@@ -32,6 +32,9 @@ struct RoomInstance: Codable, Identifiable, Hashable {
     var observations: [String]        // Observation notes (moved from Session)
     var narrative: String?             // Generated prose narrative about the room
     
+    // Collision data - hybrid instances from room class × alien domain
+    var collision: CollisionData?
+    
     // Mastery tracking
     var totalMinutes: Int               // Cumulative time in room
     var lastVisited: Date?              // Last session end time
@@ -123,6 +126,7 @@ struct RoomInstance: Codable, Identifiable, Hashable {
         case playlistGeneratedAt = "playlist_generated_at"
         case musicContext = "music_context"
         case narrative
+        case collision
     }
     
     init(
@@ -180,6 +184,7 @@ struct RoomInstance: Codable, Identifiable, Hashable {
         playlistGeneratedAt = try container.decodeIfPresent(Date.self, forKey: .playlistGeneratedAt)
         musicContext = try container.decodeIfPresent(MusicContext.self, forKey: .musicContext)
         narrative = try container.decodeIfPresent(String.self, forKey: .narrative)
+        collision = try container.decodeIfPresent(CollisionData.self, forKey: .collision)
     }
 }
 
@@ -343,6 +348,22 @@ struct AltarItem: Codable, Hashable, Identifiable {
     }
 }
 
+// MARK: - Collision Data (Room Class × Alien Domain)
+
+struct CollisionData: Codable, Hashable {
+    let alienDomain: String           // "Hospital Recovery", "Rave Culture", "Monastery"
+    let alienConstraints: [String]    // Constraints imported from the alien domain
+    let synthesis: String             // How the two worlds merge (the new "evocative why")
+    let tensionPoints: [String]       // Where they productively conflict
+    
+    init(alienDomain: String, alienConstraints: [String] = [], synthesis: String = "", tensionPoints: [String] = []) {
+        self.alienDomain = alienDomain
+        self.alienConstraints = alienConstraints
+        self.synthesis = synthesis
+        self.tensionPoints = tensionPoints
+    }
+}
+
 // MARK: - Room Trap (Failure Mode)
 
 struct RoomTrap: Codable, Hashable {
@@ -465,3 +486,58 @@ enum SceneSetting: String, Codable, CaseIterable {
     case relational = "relational/one-on-one"
     case social = "social/group"
 }
+
+// MARK: - Global Inventory (User's Owned Items)
+
+/// An item the user owns and can use across multiple rooms
+struct GlobalInventoryItem: Codable, Identifiable, Hashable {
+    @DocumentID var id: String?
+    var name: String
+    var category: InventoryCategory
+    var notes: String?
+    var addedAt: Date
+    
+    enum InventoryCategory: String, Codable, CaseIterable {
+        case instrument = "Instrument"
+        case tool = "Tool"
+        case space = "Space"
+        case digital = "Digital"
+        case furniture = "Furniture"
+        case clothing = "Clothing"
+        case other = "Other"
+        
+        var icon: String {
+            switch self {
+            case .instrument: return "🎸"
+            case .tool: return "🔧"
+            case .space: return "🏠"
+            case .digital: return "💻"
+            case .furniture: return "🪑"
+            case .clothing: return "👕"
+            case .other: return "📦"
+            }
+        }
+    }
+    
+    init(name: String, category: InventoryCategory = .other, notes: String? = nil) {
+        self.name = name
+        self.category = category
+        self.notes = notes
+        self.addedAt = Date()
+    }
+}
+
+// MARK: - Room Recommendation (LLM-generated)
+
+struct RoomRecommendation: Identifiable {
+    let id = UUID()
+    let definitionId: String
+    let roomName: String
+    let reason: String
+    let existingInventory: [String]
+    let missingInventory: [String]
+    let collisionSuggestion: String?
+    
+    var isComplete: Bool { missingInventory.isEmpty }
+}
+

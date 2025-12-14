@@ -369,33 +369,45 @@ struct SessionView: View {
             .padding(.horizontal)
             .padding(.top, 8)
             
-            // Messages
+            // Messages - using regular VStack to avoid LazyVStack render issues on device
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 12) {
                         ForEach(roomGuide.messages) { message in
                             MessageBubble(message: message)
-                                .id(message.id)
                         }
                         
-                        if roomGuide.isLoading {
-                            HStack {
-                                ProgressView()
-                                Text("Thinking...")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding()
-                        }
+                        // Invisible anchor for scrolling
+                        Color.clear
+                            .frame(height: 1)
+                            .id("bottom")
                     }
                     .padding()
                 }
-                .onChange(of: roomGuide.messages.count) {
-                    if let lastMessage = roomGuide.messages.last {
-                        withAnimation {
-                            proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                .onReceive(roomGuide.$messages) { messages in
+                    // Use onReceive instead of onChange for more stable updates
+                    guard !messages.isEmpty else { return }
+                    // Scroll after a brief delay to let layout settle
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(100))
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            proxy.scrollTo("bottom", anchor: .bottom)
                         }
                     }
+                }
+            }
+            // Loading overlay - outside the scroll view to prevent layout thrashing
+            .overlay(alignment: .bottom) {
+                if roomGuide.isLoading {
+                    HStack {
+                        ProgressView()
+                        Text("Thinking...")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(8)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+                    .padding(.bottom, 8)
                 }
             }
             
