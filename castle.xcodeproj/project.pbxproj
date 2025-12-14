@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -58,7 +58,7 @@
 		6B288E9B1EEBA6821E04F54B /* RoomInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomInstance.swift; sourceTree = "<group>"; };
 		7823F2F4F29CC3ED1152815D /* SeasonProposalSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonProposalSheet.swift; sourceTree = "<group>"; };
 		78E03608869425ECD690B058 /* StrategistService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrategistService.swift; sourceTree = "<group>"; };
-		7905BF9E6CA1DB04857245F4 /* castle.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = castle.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7905BF9E6CA1DB04857245F4 /* castle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = castle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C5B7CF86E4CD42B06588135 /* BlueprintView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintView.swift; sourceTree = "<group>"; };
 		7EA0FE70BA5A7990CE3EC543 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
 		83ACEA2FAB2122435071C8D9 /* RoomGuideService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomGuideService.swift; sourceTree = "<group>"; };
@@ -233,7 +233,6 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					2A67EF42095DEFC629A68366 = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -251,7 +250,6 @@
 			packageReferences = (
 				6BB9277E208D1AA4AAAB09CD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -317,7 +315,7 @@
 				CODE_SIGN_ENTITLEMENTS = castle/castle.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = NFTR2SNB27;
 				INFOPLIST_FILE = castle/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -459,7 +457,7 @@
 				CODE_SIGN_ENTITLEMENTS = castle/castle.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = NFTR2SNB27;
 				INFOPLIST_FILE = castle/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
