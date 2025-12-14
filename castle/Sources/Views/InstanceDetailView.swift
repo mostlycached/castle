@@ -2,13 +2,19 @@
 // Detail view for a specific room instance with sessions and entry
 
 import SwiftUI
+import FirebaseFunctions
 
 struct InstanceDetailView: View {
     let definition: RoomDefinition
-    let instance: RoomInstance
+    let initialInstance: RoomInstance  // Renamed to clarify it's initial data
     
     @StateObject private var firebaseManager = FirebaseManager.shared
     @StateObject private var musicService = MusicService.shared
+    
+    // Get live instance from firebaseManager (updates when data changes)
+    private var instance: RoomInstance {
+        firebaseManager.roomInstances.first { $0.id == initialInstance.id } ?? initialInstance
+    }
     @State private var sessions: [Session] = []
     @State private var isLoadingSessions = true
     @State private var showingSession = false
@@ -17,6 +23,10 @@ struct InstanceDetailView: View {
     @State private var generatingTrackNumber: Int? = nil
     @State private var downloadProgress: (Int, Int)? = nil
     @State private var savedMusicContext: MusicContext? = nil
+    @State private var isNarrativeExpanded = false
+    @State private var isGeneratingNarrative = false
+    @State private var showingAddObservation = false
+    @State private var newObservationText = ""
     
     var body: some View {
         ScrollView {
@@ -27,18 +37,17 @@ struct InstanceDetailView: View {
                 // Enter Button (moved to top)
                 enterButton
                 
+                // Instance Observations (prominently displayed)
+                observationsSection
+                
+                // Session History with Observations
+                sessionObservationsSection
+                
                 // Music Player
                 playlistSection
                 
-                // Liturgy
-                if let liturgy = instance.liturgy {
-                    liturgySection(liturgy)
-                }
-                
-                // Constraints
-                if !instance.constraints.isEmpty {
-                    constraintsSection
-                }
+                // Room Narrative (collapsible)
+                narrativeSection
                 
                 // Prior Sessions
                 sessionsSection
@@ -179,7 +188,7 @@ struct InstanceDetailView: View {
                     miniPlayer
                 }
                 
-                // Track List
+                // Track List - long press any track to delete entire playlist
                 ForEach(Array(tracks.enumerated()), id: \.element.id) { index, track in
                     TrackRow(
                         track: track,
@@ -192,6 +201,15 @@ struct InstanceDetailView: View {
                             musicService.playTrack(at: index)
                         }
                     )
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            Task {
+                                try? await firebaseManager.deletePlaylist(instance)
+                            }
+                        } label: {
+                            Label("Delete Entire Playlist", systemImage: "trash")
+                        }
+                    }
                 }
                 
                 // Download All Button
@@ -211,6 +229,21 @@ struct InstanceDetailView: View {
                     
                     Spacer()
                     
+                    // Delete Playlist Button
+                    Button {
+                        print("🗑️ Delete button tapped for instance: \(instance.id ?? "nil")")
+                        Task {
+                            print("🗑️ Deleting playlist...")
+                            try? await firebaseManager.deletePlaylist(instance)
+                            print("🗑️ Delete complete")
+                        }
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(.red)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    // Regenerate Button
                     if instance.isPlaylistExpired {
                         Button {
                             showingMusicConfig = true
@@ -319,7 +352,8 @@ struct InstanceDetailView: View {
     
     private func downloadAllTracks(_ tracks: [RoomTrack]) {
         downloadProgress = (0, tracks.count)
-        musicService.downloadPlaylist(tracks) { completed, total in
+        let roomName = instance.variantName.isEmpty ? definition.name : instance.variantName
+        musicService.downloadPlaylist(tracks, roomName: roomName) { completed, total in
             downloadProgress = (completed, total)
         } completion: { updatedTracks in
             downloadProgress = nil
@@ -364,21 +398,421 @@ struct InstanceDetailView: View {
         }
     }
     
-    private var constraintsSection: some View {
+    // MARK: - Observations Section
+    
+    private var observationsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Constraints")
-                .font(.headline)
+            HStack {
+                Text("Observations")
+                    .font(.headline)
+                Spacer()
+                Button {
+                    showingAddObservation = true
+                } label: {
+                    Image(systemName: "plus.circle")
+                }
+                .buttonStyle(.borderless)
+            }
             
-            ForEach(instance.constraints, id: \.self) { constraint in
-                HStack {
-                    Image(systemName: "exclamationmark.triangle")
-                        .foregroundStyle(.orange)
-                        .font(.caption)
-                    Text(constraint)
-                        .font(.subheadline)
+            if instance.observations.isEmpty {
+                Text("No observations yet")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            } else {
+                ForEach(instance.observations, id: \.self) { observation in
+                    HStack(alignment: .top) {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 6))
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 6)
+                        Text(observation)
+                            .font(.subheadline)
+                    }
                 }
             }
         }
+        .padding()
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .alert("Add Observation", isPresented: $showingAddObservation) {
+            TextField("What did you observe?", text: $newObservationText)
+            Button("Cancel", role: .cancel) {
+                newObservationText = ""
+            }
+            Button("Add") {
+                guard !newObservationText.isEmpty else { return }
+                Task {
+                    try? await firebaseManager.addObservation(newObservationText, to: instance)
+                    newObservationText = ""
+                }
+            }
+        }
+    }
+    
+    // MARK: - Session Observations Section
+    
+    private var sessionObservationsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Session Observations")
+                .font(.headline)
+            Text("What was observed in past sessions")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            
+            if sessions.isEmpty && !isLoadingSessions {
+                Text("No sessions yet")
+                    .font(.subheadline)
+                    .foregroundStyle(.tertiary)
+            } else {
+                ForEach(sessions.filter { !$0.observations.isEmpty }.prefix(5)) { session in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(session.startedAt.formatted(date: .abbreviated, time: .shortened))
+                                .font(.caption.bold())
+                            if let endedAt = session.endedAt {
+                                Text("(\(Int(endedAt.timeIntervalSince(session.startedAt) / 60)) min)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        
+                        ForEach(session.observations, id: \.self) { observation in
+                            HStack(alignment: .top) {
+                                Image(systemName: "quote.opening")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 4)
+                                Text(observation)
+                                    .font(.caption)
+                            }
+                            .padding(.leading, 8)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+        .padding()
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+    
+    // MARK: - Evocative Section (The Soul)
+    
+    @ViewBuilder
+    private var evocativeSection: some View {
+        let quote = definition.evocativeQuote
+        let description = definition.evocativeDescription ?? instance.evocativeWhy
+        
+        if quote != nil || description != nil {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The Evocative Why")
+                    .font(.headline)
+                
+                if let quote = quote {
+                    Text("\"\(quote)\"")
+                        .font(.body)
+                        .italic()
+                        .foregroundStyle(.secondary)
+                }
+                
+                if let desc = description {
+                    Text(desc)
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                }
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    // MARK: - Physics Section
+    
+    @ViewBuilder
+    private var physicsSection: some View {
+        let hasPhysics = definition.physicsDescription != nil || 
+                         definition.inputLogic != nil || 
+                         definition.outputLogic != nil ||
+                         instance.physics != nil
+        
+        if hasPhysics {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("The Physics")
+                        .font(.headline)
+                    Spacer()
+                    if let archetype = definition.archetype {
+                        Text(archetype)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.purple.opacity(0.2))
+                            .foregroundStyle(.purple)
+                            .clipShape(Capsule())
+                    }
+                }
+                
+                // Physics chips
+                HStack(spacing: 16) {
+                    PhysicsChip(label: "D", value: definition.dionysianLevel.rawValue.capitalized)
+                    PhysicsChip(label: "A", value: definition.apollonianLevel.rawValue.capitalized)
+                }
+                
+                // Description
+                if let desc = definition.physicsDescription {
+                    Text(desc)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                
+                // Equation
+                if let equation = definition.equation {
+                    Text(equation)
+                        .font(.system(.caption, design: .monospaced))
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .background(.secondary.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                
+                // Input/Output Logic
+                let inputLogic = definition.inputLogic ?? instance.physics?.inputLogic
+                let outputLogic = definition.outputLogic ?? instance.physics?.outputLogic
+                
+                if inputLogic != nil || outputLogic != nil {
+                    VStack(alignment: .leading, spacing: 6) {
+                        if let input = inputLogic {
+                            HStack(alignment: .top) {
+                                Image(systemName: "arrow.right.circle")
+                                    .foregroundStyle(.green)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Input")
+                                        .font(.caption.bold())
+                                    Text(input)
+                                        .font(.caption)
+                                }
+                            }
+                        }
+                        if let output = outputLogic {
+                            HStack(alignment: .top) {
+                                Image(systemName: "arrow.left.circle")
+                                    .foregroundStyle(.blue)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Output")
+                                        .font(.caption.bold())
+                                    Text(output)
+                                        .font(.caption)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    // MARK: - Constraints Section (The Architecture)
+    
+    @ViewBuilder
+    private var constraintsSection: some View {
+        let constraints = definition.constraints ?? (instance.constraints.isEmpty ? nil : instance.constraints.map { RoomConstraint(name: $0, description: "") })
+        
+        if let constraints = constraints, !constraints.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The Architecture")
+                    .font(.headline)
+                Text("If any of these walls are breached, the room collapses.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .italic()
+                
+                ForEach(constraints) { constraint in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle")
+                                .foregroundStyle(.orange)
+                                .font(.caption)
+                            Text(constraint.name)
+                                .font(.subheadline.bold())
+                        }
+                        if !constraint.description.isEmpty {
+                            Text(constraint.description)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.leading, 20)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    // MARK: - Altar Section (Material Artifacts)
+    
+    @ViewBuilder
+    private var altarSection: some View {
+        let altar = definition.altar ?? instance.altar
+        
+        if let altar = altar, !altar.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The Altar")
+                    .font(.headline)
+                
+                ForEach(altar) { item in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Image(systemName: "star.fill")
+                                .foregroundStyle(.yellow)
+                                .font(.caption)
+                            Text(item.name)
+                                .font(.subheadline.bold())
+                        }
+                        if !item.description.isEmpty {
+                            Text(item.description)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.leading, 20)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    // MARK: - Trap Section (Failure Mode)
+    
+    @ViewBuilder
+    private var trapSection: some View {
+        let trap = definition.trap ?? instance.trap
+        
+        if let trap = trap {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The Trap")
+                    .font(.headline)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top) {
+                        Image(systemName: "drop.fill")
+                            .foregroundStyle(.red)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("The Leak")
+                                .font(.caption.bold())
+                            Text(trap.leak)
+                                .font(.caption)
+                        }
+                    }
+                    
+                    HStack(alignment: .top) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.red)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("The Result")
+                                .font(.caption.bold())
+                            Text(trap.result)
+                                .font(.caption)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(.red.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    private var narrativeSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header with expand/collapse toggle
+            Button {
+                withAnimation { isNarrativeExpanded.toggle() }
+            } label: {
+                HStack {
+                    Text("Room Narrative")
+                        .font(.headline)
+                    Spacer()
+                    if instance.narrative != nil {
+                        Image(systemName: isNarrativeExpanded ? "chevron.up" : "chevron.down")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+            
+            // Content
+            if let narrative = instance.narrative {
+                // Narrative exists - show collapsible text
+                if isNarrativeExpanded {
+                    Text(narrative)
+                        .font(.body)
+                        .lineSpacing(4)
+                        .padding()
+                        .background(.secondary.opacity(0.05))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    
+                    // Regenerate button
+                    Button {
+                        Task { await generateNarrative() }
+                    } label: {
+                        if isGeneratingNarrative {
+                            HStack {
+                                ProgressView()
+                                    .controlSize(.small)
+                                Text("Regenerating...")
+                            }
+                        } else {
+                            Label("Regenerate", systemImage: "arrow.clockwise")
+                        }
+                    }
+                    .font(.caption)
+                    .disabled(isGeneratingNarrative)
+                } else {
+                    // Preview when collapsed
+                    Text(narrative.prefix(150) + "...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
+                }
+            } else {
+                // No narrative yet - show generate button
+                VStack(spacing: 12) {
+                    Text("Generate a literary narrative for this room")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
+                    Button {
+                        Task { await generateNarrative() }
+                    } label: {
+                        if isGeneratingNarrative {
+                            HStack {
+                                ProgressView()
+                                    .controlSize(.small)
+                                Text("Generating narrative...")
+                            }
+                        } else {
+                            Label("Generate Narrative", systemImage: "text.book.closed")
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(isGeneratingNarrative)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+            }
+        }
+        .padding()
+        .background(.secondary.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     
     private var sessionsSection: some View {
@@ -451,6 +885,16 @@ struct InstanceDetailView: View {
         } catch {
             print("Failed to start session: \(error)")
         }
+    }
+    
+    private func generateNarrative() async {
+        isGeneratingNarrative = true
+        do {
+            try await firebaseManager.generateNarrative(for: instance, definition: definition)
+        } catch {
+            print("Failed to generate narrative: \(error)")
+        }
+        isGeneratingNarrative = false
     }
 }
 
@@ -596,7 +1040,7 @@ struct TrackRow: View {
     }
 }
 
-// MARK: - Music Context Editor
+// MARK: - Album Concept Picker (Simplified Music Configuration)
 
 struct MusicContextEditor: View {
     let definition: RoomDefinition
@@ -604,60 +1048,101 @@ struct MusicContextEditor: View {
     let onGenerate: (MusicContext) -> Void
     
     @Environment(\.dismiss) private var dismiss
-    
-    @State private var sceneSetting: SceneSetting = .solo
-    @State private var narrativeArc = ""
-    @State private var somaticElements: [String] = []
-    @State private var locationInspiration = ""
-    @State private var instruments: [String] = []
-    @State private var mood = ""
-    @State private var tempo = "moderate"
-    @State private var foundSounds: [String] = []
-    
-    // Input fields
-    @State private var newSomatic = ""
-    @State private var newInstrument = ""
-    @State private var newFoundSound = ""
+    @State private var selectedConcept: AlbumConcept?
+    @State private var customPrompt = ""
+    @State private var useCustom = false
+    @State private var albumConcepts: [AlbumConcept] = []
+    @State private var isLoadingConcepts = true
+    @State private var loadError: String?
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Scene Setting") {
-                    Picker("Setting", selection: $sceneSetting) {
-                        ForEach(SceneSetting.allCases, id: \.self) { setting in
-                            Text(setting.rawValue.capitalized).tag(setting)
+            Group {
+                if isLoadingConcepts {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                        Text("Generating album concepts...")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let error = loadError {
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.largeTitle)
+                            .foregroundStyle(.orange)
+                        Text(error)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                        Button("Try Again") {
+                            Task { await loadAlbumConcepts() }
                         }
                     }
-                    .pickerStyle(.segmented)
-                }
-                
-                Section("Atmosphere") {
-                    TextField("Location Inspiration (e.g., ocean, volcano, forest)", text: $locationInspiration)
-                    TextField("Mood (e.g., contemplative, energizing)", text: $mood)
-                    Picker("Tempo", selection: $tempo) {
-                        Text("Slow").tag("slow")
-                        Text("Moderate").tag("moderate")
-                        Text("Upbeat").tag("upbeat")
+                    .padding()
+                } else {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            // Header
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Choose an Album Concept")
+                                    .font(.headline)
+                                Text("Based on \(definition.name)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal)
+                            
+                            // Album concept cards
+                            VStack(spacing: 12) {
+                                ForEach(albumConcepts) { concept in
+                                    AlbumConceptCard(
+                                        concept: concept,
+                                        isSelected: selectedConcept?.id == concept.id && !useCustom,
+                                        onTap: {
+                                            selectedConcept = concept
+                                            useCustom = false
+                                        }
+                                    )
+                                }
+                            }
+                            .padding(.horizontal)
+                            
+                            Divider()
+                                .padding(.vertical, 8)
+                            
+                            // Custom prompt option
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("Or describe your own")
+                                        .font(.subheadline.bold())
+                                    Spacer()
+                                    if useCustom {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(.blue)
+                                    }
+                                }
+                                
+                                TextEditor(text: $customPrompt)
+                                    .frame(minHeight: 80)
+                                    .padding(8)
+                                    .background(.secondary.opacity(0.1))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .onTapGesture {
+                                        useCustom = true
+                                    }
+                                
+                                Text("Describe the atmosphere, instruments, mood, tempo, sounds...")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .padding(.horizontal)
+                        }
+                        .padding(.vertical)
                     }
                 }
-                
-                Section("Narrative (Optional)") {
-                    TextField("Story arc (e.g., journey of discovery)", text: $narrativeArc)
-                }
-                
-                Section("Instruments") {
-                    chipEditor(items: $instruments, newItem: $newInstrument, placeholder: "Add instrument...")
-                }
-                
-                Section("Somatic Elements") {
-                    chipEditor(items: $somaticElements, newItem: $newSomatic, placeholder: "Add element (heartbeat, breath)...")
-                }
-                
-                Section("Found Sounds") {
-                    chipEditor(items: $foundSounds, newItem: $newFoundSound, placeholder: "Add sound (rain, pen clicks)...")
-                }
             }
-            .navigationTitle("Configure Playlist")
+            .navigationTitle("Generate Playlist")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -665,101 +1150,242 @@ struct MusicContextEditor: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Generate") {
-                        let context = MusicContext(
-                            sceneSetting: sceneSetting,
-                            narrativeArc: narrativeArc.isEmpty ? nil : narrativeArc,
-                            somaticElements: somaticElements,
-                            locationInspiration: locationInspiration,
-                            instruments: instruments,
-                            mood: mood,
-                            tempo: tempo,
-                            foundSounds: foundSounds
-                        )
+                        let context: MusicContext
+                        if useCustom && !customPrompt.isEmpty {
+                            context = MusicContext(
+                                sceneSetting: .solo,
+                                narrativeArc: customPrompt,
+                                somaticElements: [],
+                                locationInspiration: customPrompt,
+                                instruments: [],
+                                mood: "custom",
+                                tempo: "moderate",
+                                foundSounds: []
+                            )
+                        } else if let concept = selectedConcept {
+                            context = concept.toMusicContext()
+                        } else {
+                            return
+                        }
                         onGenerate(context)
                         dismiss()
                     }
-                    .disabled(locationInspiration.isEmpty || mood.isEmpty)
+                    .disabled(isLoadingConcepts)
+                    .disabled(!useCustom && selectedConcept == nil)
+                    .disabled(useCustom && customPrompt.isEmpty)
                 }
             }
-            .onAppear {
-                prefillFromRoom()
+            .task {
+                await loadAlbumConcepts()
             }
         }
     }
     
-    private func chipEditor(items: Binding<[String]>, newItem: Binding<String>, placeholder: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            FlowLayout(spacing: 6) {
-                ForEach(items.wrappedValue, id: \.self) { item in
-                    HStack(spacing: 4) {
-                        Text(item)
-                        Button {
-                            items.wrappedValue.removeAll { $0 == item }
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.caption)
-                        }
-                    }
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(.blue.opacity(0.1))
-                    .clipShape(Capsule())
-                }
-            }
+    // MARK: - LLM Album Concept Generation
+    
+    private func loadAlbumConcepts() async {
+        isLoadingConcepts = true
+        loadError = nil
+        
+        let prompt = """
+        Generate 5 WILDLY DIVERSE album concept recommendations for \(definition.name).
+        
+        ROOM CONTEXT:
+        - Room: \(definition.name) (Room \(definition.number))
+        - Function: \(definition.function)
+        - Physics: \(definition.physicsHint)
+        - Evocative: \(definition.evocativeDescription ?? "N/A")
+        - Archetype: \(definition.archetype ?? "N/A")
+        - Instance: \(instance.variantName.isEmpty ? "Default" : instance.variantName)
+        
+        GENRE PALETTE (pick from these or combine creatively):
+        - Vocal: acapella, Gregorian chant, Byzantine chant, throat singing (Tuvan khöömei, Mongolian), guttural chants, polyphonic choir, Qawwali
+        - Contemporary: lo-fi R&B, neo-soul, chillhop, trip-hop, downtempo, vaporwave
+        - Electronic: dark ambient, industrial, IDM, glitch, synthwave, electro swing, techno, house
+        - Rock/Metal: post-rock, shoegaze, doom metal, black metal, gothic rock, progressive rock
+        - Classical: baroque, romantic orchestral, minimalist (Glass, Reich), contemporary classical
+        - World: gamelan, Carnatic, Hindustani raga, flamenco, Afrobeat, bossa nova, reggae, dub, Celtic, Klezmer
+        - Regional: French chanson, fado, tango, anime/J-pop, K-pop, Bollywood, Ethiopian jazz
+        - Experimental: noise, musique concrète, free jazz, drone, field recordings, ASMR-influenced
+        - Traditional: country, folk, bluegrass, sea shanties, work songs, lullabies
+        
+        PHYSICAL ATMOSPHERES (for "location" field):
+        - Volcanic: active volcano, lava tubes, geothermal springs, sulfur vents
+        - Aquatic: deep ocean floor, coral reef, underwater cave, stormy sea, frozen lake
+        - Underground: limestone cave, salt mine, catacombs, subway tunnel, bunker
+        - Wilderness: Amazon rainforest, Siberian taiga, African savanna, bamboo forest, mangrove swamp
+        - Extreme: glacier, desert at night, thunderstorm, tornado, northern lights
+        - Industrial: abandoned factory, steel mill, shipyard, server room, construction site
+        - Sacred: Gothic cathedral, Shinto shrine, ancient temple ruins, sacred grove
+        
+        UNUSUAL INSTRUMENTS (for "instruments" field):
+        - Tibetan singing bowls, crystal bowls, gongs, tam-tams
+        - Didgeridoo, jaw harp, mouth harp
+        - Gamelan (metallophone, kendang), kalimba, mbira
+        - Hang drum, steel pan, tabla, djembe, frame drums
+        - Kora, oud, sitar, erhu, shamisen, balalaika
+        - Hurdy-gurdy, accordion, bandoneon, harmonium
+        - Prepared piano, bowed vibraphone, waterphone
+        - Theremin, ondes Martenot, modular synths
+        
+        FOUND SOUNDS (for "foundSounds" field):
+        - Natural: volcano rumble, dripping cave water, whale song, cicadas, thunder, crackling fire
+        - Industrial: machinery hum, metal clangs, train rhythms, factory pulses
+        - Human: heartbeat, breath, footsteps, crowd murmur, children playing
+        - Urban: traffic, construction, subway, market chatter
+        
+        REQUIREMENTS:
+        Each concept must be DISTINCTLY DIFFERENT in genre, atmosphere, and emotional quality.
+        Be creative, unexpected, even weird. Match the room's energy but through surprising musical lenses.
+        
+        Respond ONLY with valid JSON array:
+        [
+          {"title": "...", "description": "...", "mood": "...", "tempo": "...", "instruments": [...], "location": "...", "narrative": "...", "foundSounds": [...]}
+        ]
+        """
+        
+        do {
+            let functions = Functions.functions()
+            let result = try await functions.httpsCallable("callGemini").call([
+                "prompt": prompt,
+                "systemPrompt": "You are a creative music director. Generate diverse album concepts. Respond ONLY with valid JSON array, no markdown.",
+                "model": "gemini-2.0-flash"
+            ])
             
-            HStack {
-                TextField(placeholder, text: newItem)
-                    .textFieldStyle(.roundedBorder)
-                Button {
-                    if !newItem.wrappedValue.isEmpty {
-                        items.wrappedValue.append(newItem.wrappedValue)
-                        newItem.wrappedValue = ""
+            if let data = result.data as? [String: Any],
+               let text = data["text"] as? String {
+                
+                // Extract JSON from response
+                if let jsonData = extractConceptsJSON(from: text) {
+                    let concepts = try JSONDecoder().decode([AlbumConceptData].self, from: jsonData)
+                    albumConcepts = concepts.enumerated().map { index, data in
+                        AlbumConcept(
+                            id: "concept_\(index)",
+                            title: data.title,
+                            description: data.description,
+                            mood: data.mood,
+                            tempo: data.tempo,
+                            instruments: data.instruments,
+                            location: data.location,
+                            narrative: data.narrative,
+                            foundSounds: data.foundSounds
+                        )
                     }
-                } label: {
-                    Image(systemName: "plus.circle.fill")
+                } else {
+                    loadError = "Could not parse album concepts"
                 }
-                .disabled(newItem.wrappedValue.isEmpty)
+            } else {
+                loadError = "Invalid response from AI"
             }
+        } catch {
+            loadError = "Failed to generate: \(error.localizedDescription)"
         }
+        
+        isLoadingConcepts = false
     }
     
-    private func prefillFromRoom() {
-        // Prefill based on room definition
-        if let physics = instance.physics {
-            locationInspiration = physics.dionysianEnergy.lowercased().contains("high") ? "volcano, storm" : "calm lake, garden"
-            tempo = physics.dionysianEnergy.lowercased().contains("high") ? "upbeat" : "slow"
+    private func extractConceptsJSON(from text: String) -> Data? {
+        // Try to find JSON array
+        if let start = text.firstIndex(of: "["),
+           let end = text.lastIndex(of: "]") {
+            let jsonString = String(text[start...end])
+            return jsonString.data(using: .utf8)
         }
-        
-        mood = definition.function.contains("Rest") ? "serene" : 
-               definition.function.contains("Work") ? "focused" : "contemplative"
-        
-        // Default instruments based on energy levels
-        let d = definition.dionysianLevel
-        let a = definition.apollonianLevel
-        
-        switch (d, a) {
-        case (.low, .low): // Foundation
-            instruments = ["ambient pads", "gentle piano"]
-            somaticElements = ["breath", "heartbeat"]
-        case (.low, .high): // Administration
-            instruments = ["minimal piano", "soft strings"]
-            somaticElements = ["focus", "clarity"]
-        case (.high, .high): // Machine Shop
-            instruments = ["synth", "electronic beats"]
-            somaticElements = ["energy", "flow"]
-        case (.high, .low): // Wilderness
-            instruments = ["organic textures", "world percussion"]
-            somaticElements = ["movement", "exploration"]
-        case (.medium, _), (_, .medium): // Forum
-            instruments = ["acoustic guitar", "warm bass"]
-            somaticElements = ["connection", "presence"]
-        case (.meta, _), (_, .meta): // Observatory
-            instruments = ["ethereal synths", "glass bells"]
-            somaticElements = ["awareness", "stillness"]
-        default:
-            instruments = ["ambient pads"]
-            somaticElements = ["presence"]
+        return nil
+    }
+}
+
+// MARK: - Album Concept Data (for JSON decoding from LLM)
+
+struct AlbumConceptData: Codable {
+    let title: String
+    let description: String
+    let mood: String
+    let tempo: String
+    let instruments: [String]
+    let location: String
+    let narrative: String
+    let foundSounds: [String]
+}
+
+// MARK: - Album Concept Model
+
+struct AlbumConcept: Identifiable {
+    let id: String
+    let title: String
+    let description: String
+    let mood: String
+    let tempo: String
+    let instruments: [String]
+    let location: String
+    let narrative: String
+    let foundSounds: [String]
+    
+    func toMusicContext() -> MusicContext {
+        MusicContext(
+            sceneSetting: .solo,
+            narrativeArc: narrative,
+            somaticElements: ["breath", "presence"],
+            locationInspiration: location,
+            instruments: instruments,
+            mood: mood,
+            tempo: tempo,
+            foundSounds: foundSounds
+        )
+    }
+}
+
+// MARK: - Album Concept Card
+
+struct AlbumConceptCard: View {
+    let concept: AlbumConcept
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(concept.title)
+                        .font(.subheadline.bold())
+                    Spacer()
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.blue)
+                    }
+                }
+                
+                Text(concept.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                HStack(spacing: 4) {
+                    ForEach(concept.instruments.prefix(3), id: \.self) { instrument in
+                        Text(instrument)
+                            .font(.caption2)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.blue.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
+                    Text(concept.mood)
+                        .font(.caption2)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(.purple.opacity(0.1))
+                        .foregroundStyle(.purple)
+                        .clipShape(Capsule())
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(isSelected ? .blue.opacity(0.1) : .secondary.opacity(0.05))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? .blue : .clear, lineWidth: 2)
+            )
         }
+        .buttonStyle(.plain)
     }
 }

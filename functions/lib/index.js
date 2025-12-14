@@ -74,12 +74,12 @@ async function requireAuthorization(request) {
     return request.auth.uid;
 }
 /**
- * Call Gemini for text generation
- * Used by NavigatorService for somatic diagnosis
+ * Call Gemini for text generation (with optional image)
+ * Used by NavigatorService for somatic diagnosis and RoomGuide for multimodal analysis
  */
 exports.callGemini = (0, https_1.onCall)({ secrets: [geminiApiKey] }, async (request) => {
     await requireAuthorization(request);
-    const { prompt, systemPrompt, model = "gemini-2.0-flash" } = request.data;
+    const { prompt, systemPrompt, model = "gemini-2.0-flash", imageBase64 } = request.data;
     if (!prompt) {
         throw new https_1.HttpsError("invalid-argument", "Prompt is required");
     }
@@ -89,7 +89,21 @@ exports.callGemini = (0, https_1.onCall)({ secrets: [geminiApiKey] }, async (req
         systemInstruction: systemPrompt,
     });
     try {
-        const result = await geminiModel.generateContent(prompt);
+        let result;
+        if (imageBase64) {
+            // Multimodal request with image
+            const imagePart = {
+                inlineData: {
+                    data: imageBase64,
+                    mimeType: "image/jpeg"
+                }
+            };
+            result = await geminiModel.generateContent([prompt, imagePart]);
+        }
+        else {
+            // Text-only request
+            result = await geminiModel.generateContent(prompt);
+        }
         const text = result.response.text();
         return { text };
     }

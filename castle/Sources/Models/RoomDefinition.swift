@@ -18,6 +18,19 @@ struct RoomDefinition: Codable, Identifiable, Hashable {
     let physicsHint: String // "Low D, High A. Signal calibration."
     let function: String    // "Setting the trajectory. Zero external input."
     
+    // Rich spec fields (optional - may not be present in all rooms yet)
+    let archetype: String?              // "The Filter", "The Reactor", etc.
+    let physicsDescription: String?     // Full description of physics
+    let equation: String?               // LaTeX equation
+    let inputLogic: String?             // What goes in
+    let outputLogic: String?            // What comes out
+    let evocativeQuote: String?         // The motto/quote
+    let evocativeDescription: String?   // The soul description
+    let constraints: [RoomConstraint]?  // Hard constraints
+    let altar: [AltarItem]?             // Material artifacts
+    let liturgy: RoomLiturgy?           // The protocol
+    let trap: RoomTrap?                 // Failure mode
+    
     var id: String { number }
     
     enum CodingKeys: String, CodingKey {
@@ -25,6 +38,53 @@ struct RoomDefinition: Codable, Identifiable, Hashable {
         case name
         case physicsHint = "physics_hint"
         case function
+        case archetype
+        case physicsDescription = "physics_description"
+        case equation
+        case inputLogic = "input_logic"
+        case outputLogic = "output_logic"
+        case evocativeQuote = "evocative_quote"
+        case evocativeDescription = "evocative_description"
+        case constraints
+        case altar
+        case liturgy
+        case trap
+    }
+    
+    // MARK: - Initializer with defaults for optional fields
+    
+    init(
+        number: String,
+        name: String,
+        physicsHint: String,
+        function: String,
+        archetype: String? = nil,
+        physicsDescription: String? = nil,
+        equation: String? = nil,
+        inputLogic: String? = nil,
+        outputLogic: String? = nil,
+        evocativeQuote: String? = nil,
+        evocativeDescription: String? = nil,
+        constraints: [RoomConstraint]? = nil,
+        altar: [AltarItem]? = nil,
+        liturgy: RoomLiturgy? = nil,
+        trap: RoomTrap? = nil
+    ) {
+        self.number = number
+        self.name = name
+        self.physicsHint = physicsHint
+        self.function = function
+        self.archetype = archetype
+        self.physicsDescription = physicsDescription
+        self.equation = equation
+        self.inputLogic = inputLogic
+        self.outputLogic = outputLogic
+        self.evocativeQuote = evocativeQuote
+        self.evocativeDescription = evocativeDescription
+        self.constraints = constraints
+        self.altar = altar
+        self.liturgy = liturgy
+        self.trap = trap
     }
     
     // MARK: - Computed Properties
@@ -58,6 +118,19 @@ struct RoomDefinition: Codable, Identifiable, Hashable {
             case .meta: return "teal"
             }
         }
+    }
+}
+
+// MARK: - Room Constraint
+
+struct RoomConstraint: Codable, Hashable, Identifiable {
+    var id: String { name }
+    let name: String
+    let description: String
+    
+    init(name: String, description: String) {
+        self.name = name
+        self.description = description
     }
 }
 

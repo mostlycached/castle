@@ -2,6 +2,7 @@
 // AI agent for in-room presence guidance
 
 import Foundation
+import UIKit
 import FirebaseFunctions
 
 /// The Room Guide helps users stay present and engaged while in a room
@@ -47,24 +48,38 @@ final class RoomGuideService: ObservableObject {
     // MARK: - Chat
     
     /// Send a message to the Room Guide
-    func sendMessage(_ text: String) async {
+    /// - Parameters:
+    ///   - text: The user's message
+    ///   - systemPrompt: Optional custom system prompt (overrides default Room Guide prompt)
+    ///   - image: Optional image to analyze
+    func sendMessage(_ text: String, systemPrompt customPrompt: String? = nil, image: UIImage? = nil) async {
         guard let instance = currentInstance, let definition = currentDefinition else { return }
         
-        // Add user message
-        messages.append(GuideMessage(role: .user, content: text))
+        // Add user message (with image indicator)
+        let displayText = image != nil ? "📷 " + (text.isEmpty ? "[Image]" : text) : text
+        messages.append(GuideMessage(role: .user, content: displayText))
         isLoading = true
         
         defer { isLoading = false }
         
         do {
-            let systemPrompt = buildSystemPrompt(instance: instance, definition: definition)
+            // Use custom prompt if provided, otherwise build default
+            let systemPrompt = customPrompt ?? buildSystemPrompt(instance: instance, definition: definition)
             let conversationContext = buildConversationContext()
             
-            let result = try await functions.httpsCallable("callGemini").call([
-                "prompt": "\(conversationContext)\n\nUser: \(text)",
+            var callData: [String: Any] = [
+                "prompt": "\(conversationContext)\n\nUser: \(text.isEmpty && image != nil ? "What do you see in this image? Analyze it from your philosophical perspective." : text)",
                 "systemPrompt": systemPrompt,
                 "model": "gemini-2.0-flash"
-            ])
+            ]
+            
+            // Add base64 image if present
+            if let image = image,
+               let imageData = image.jpegData(compressionQuality: 0.7) {
+                callData["imageBase64"] = imageData.base64EncodedString()
+            }
+            
+            let result = try await functions.httpsCallable("callGemini").call(callData)
             
             if let data = result.data as? [String: Any],
                let responseText = data["text"] as? String {
@@ -87,7 +102,6 @@ final class RoomGuideService: ObservableObject {
             print("Room Guide error: \(error)")
             messages.append(GuideMessage(role: .guide, content: "I'm having trouble connecting. Take a breath and focus on the present moment."))
         }
-
     }
     
     // MARK: - Transitions

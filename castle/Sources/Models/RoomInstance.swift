@@ -24,6 +24,13 @@ struct RoomInstance: Codable, Identifiable, Hashable {
     var evocativeWhy: String?
     var constraints: [String]
     var liturgy: RoomLiturgy?
+    var altar: [AltarItem]?           // Material artifacts
+    var trap: RoomTrap?               // Failure mode
+    
+    // User-defined data
+    var instanceDescription: String?  // User's description of this instance
+    var observations: [String]        // Observation notes (moved from Session)
+    var narrative: String?             // Generated prose narrative about the room
     
     // Mastery tracking
     var totalMinutes: Int               // Cumulative time in room
@@ -105,12 +112,17 @@ struct RoomInstance: Codable, Identifiable, Hashable {
         case evocativeWhy = "evocative_why"
         case constraints
         case liturgy
+        case altar
+        case trap
+        case instanceDescription = "instance_description"
+        case observations
         case totalMinutes = "total_minutes"
         case lastVisited = "last_visited"
         case masteryDimensions = "mastery_dimensions"
         case playlist
         case playlistGeneratedAt = "playlist_generated_at"
         case musicContext = "music_context"
+        case narrative
     }
     
     init(
@@ -138,6 +150,7 @@ struct RoomInstance: Codable, Identifiable, Hashable {
         self.totalMinutes = totalMinutes
         self.lastVisited = nil
         self.masteryDimensions = masteryDimensions
+        self.observations = []
     }
     
     init(from decoder: Decoder) throws {
@@ -156,12 +169,17 @@ struct RoomInstance: Codable, Identifiable, Hashable {
         evocativeWhy = try container.decodeIfPresent(String.self, forKey: .evocativeWhy)
         constraints = try container.decodeIfPresent([String].self, forKey: .constraints) ?? []
         liturgy = try container.decodeIfPresent(RoomLiturgy.self, forKey: .liturgy)
+        altar = try container.decodeIfPresent([AltarItem].self, forKey: .altar)
+        trap = try container.decodeIfPresent(RoomTrap.self, forKey: .trap)
+        instanceDescription = try container.decodeIfPresent(String.self, forKey: .instanceDescription)
+        observations = try container.decodeIfPresent([String].self, forKey: .observations) ?? []
         totalMinutes = try container.decodeIfPresent(Int.self, forKey: .totalMinutes) ?? 0
         lastVisited = try container.decodeIfPresent(Date.self, forKey: .lastVisited)
         masteryDimensions = try container.decodeIfPresent([MasteryDimension].self, forKey: .masteryDimensions) ?? []
         playlist = try container.decodeIfPresent([RoomTrack].self, forKey: .playlist)
         playlistGeneratedAt = try container.decodeIfPresent(Date.self, forKey: .playlistGeneratedAt)
         musicContext = try container.decodeIfPresent(MusicContext.self, forKey: .musicContext)
+        narrative = try container.decodeIfPresent(String.self, forKey: .narrative)
     }
 }
 
@@ -309,6 +327,31 @@ struct RoomLiturgy: Codable, Equatable, Hashable {
             self.stringValue = String(intValue)
             self.intValue = intValue
         }
+    }
+}
+
+// MARK: - Altar Item (Material Artifacts)
+
+struct AltarItem: Codable, Hashable, Identifiable {
+    var id: String { name }
+    let name: String
+    let description: String
+    
+    init(name: String, description: String = "") {
+        self.name = name
+        self.description = description
+    }
+}
+
+// MARK: - Room Trap (Failure Mode)
+
+struct RoomTrap: Codable, Hashable {
+    let leak: String       // The failure cause
+    let result: String     // The failure outcome
+    
+    init(leak: String, result: String) {
+        self.leak = leak
+        self.result = result
     }
 }
 

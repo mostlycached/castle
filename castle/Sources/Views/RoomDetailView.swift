@@ -21,8 +21,23 @@ struct RoomDetailView: View {
                 // Room Class Info
                 headerSection
                 
+                // Evocative Why (The Soul)
+                evocativeSection
+                
                 // Physics
                 physicsSection
+                
+                // Constraints (The Architecture)
+                constraintsSection
+                
+                // Altar (Material Artifacts)
+                altarSection
+                
+                // Liturgy
+                liturgySection
+                
+                // Trap (Failure Mode)
+                trapSection
                 
                 // Instances Section
                 instancesSection
@@ -83,6 +98,236 @@ struct RoomDetailView: View {
                     color: apollonianColor
                 )
             }
+            
+            // Physics details
+            if let desc = definition.physicsDescription {
+                Text(desc)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            
+            if let equation = definition.equation {
+                Text(equation)
+                    .font(.system(.caption, design: .monospaced))
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .background(.secondary.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            
+            // Input/Output Logic
+            if let input = definition.inputLogic {
+                HStack(alignment: .top) {
+                    Image(systemName: "arrow.right.circle")
+                        .foregroundStyle(.green)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Input")
+                            .font(.caption.bold())
+                        Text(input)
+                            .font(.caption)
+                    }
+                }
+            }
+            if let output = definition.outputLogic {
+                HStack(alignment: .top) {
+                    Image(systemName: "arrow.left.circle")
+                        .foregroundStyle(.blue)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Output")
+                            .font(.caption.bold())
+                        Text(output)
+                            .font(.caption)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Evocative Section
+    
+    @ViewBuilder
+    private var evocativeSection: some View {
+        if definition.evocativeQuote != nil || definition.evocativeDescription != nil {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The Evocative Why")
+                    .font(.headline)
+                
+                if let quote = definition.evocativeQuote {
+                    Text("\"\(quote)\"")
+                        .font(.body)
+                        .italic()
+                        .foregroundStyle(.secondary)
+                }
+                
+                if let desc = definition.evocativeDescription {
+                    Text(desc)
+                        .font(.subheadline)
+                }
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    // MARK: - Constraints Section
+    
+    @ViewBuilder
+    private var constraintsSection: some View {
+        if let constraints = definition.constraints, !constraints.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The Architecture")
+                    .font(.headline)
+                Text("If any of these walls are breached, the room collapses.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .italic()
+                
+                ForEach(constraints) { constraint in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle")
+                                .foregroundStyle(.orange)
+                                .font(.caption)
+                            Text(constraint.name)
+                                .font(.subheadline.bold())
+                        }
+                        if !constraint.description.isEmpty {
+                            Text(constraint.description)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.leading, 20)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    // MARK: - Altar Section
+    
+    @ViewBuilder
+    private var altarSection: some View {
+        if let altar = definition.altar, !altar.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The Altar")
+                    .font(.headline)
+                
+                ForEach(altar) { item in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Image(systemName: "star.fill")
+                                .foregroundStyle(.yellow)
+                                .font(.caption)
+                            Text(item.name)
+                                .font(.subheadline.bold())
+                        }
+                        if !item.description.isEmpty {
+                            Text(item.description)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.leading, 20)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    // MARK: - Liturgy Section
+    
+    @ViewBuilder
+    private var liturgySection: some View {
+        if let liturgy = definition.liturgy {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The Liturgy")
+                    .font(.headline)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top) {
+                        Image(systemName: "door.left.hand.open")
+                            .foregroundStyle(.green)
+                        VStack(alignment: .leading) {
+                            Text("Entry")
+                                .font(.caption.bold())
+                            Text(liturgy.entry)
+                                .font(.caption)
+                        }
+                    }
+                    
+                    ForEach(Array(liturgy.steps.enumerated()), id: \.offset) { index, step in
+                        HStack(alignment: .top) {
+                            Image(systemName: "\(index + 1).circle")
+                                .foregroundStyle(.blue)
+                            VStack(alignment: .leading) {
+                                Text("Step \(index + 1)")
+                                    .font(.caption.bold())
+                                Text(step)
+                                    .font(.caption)
+                            }
+                        }
+                    }
+                    
+                    HStack(alignment: .top) {
+                        Image(systemName: "door.right.hand.open")
+                            .foregroundStyle(.purple)
+                        VStack(alignment: .leading) {
+                            Text("Exit")
+                                .font(.caption.bold())
+                            Text(liturgy.exit)
+                                .font(.caption)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    // MARK: - Trap Section
+    
+    @ViewBuilder
+    private var trapSection: some View {
+        if let trap = definition.trap {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The Trap")
+                    .font(.headline)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top) {
+                        Image(systemName: "drop.fill")
+                            .foregroundStyle(.red)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("The Leak")
+                                .font(.caption.bold())
+                            Text(trap.leak)
+                                .font(.caption)
+                        }
+                    }
+                    
+                    HStack(alignment: .top) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.red)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("The Result")
+                                .font(.caption.bold())
+                            Text(trap.result)
+                                .font(.caption)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(.red.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
     
@@ -102,7 +347,7 @@ struct RoomDetailView: View {
             } else {
                 ForEach(instances) { instance in
                     NavigationLink {
-                        InstanceDetailView(definition: definition, instance: instance)
+                        InstanceDetailView(definition: definition, initialInstance: instance)
                     } label: {
                         InstanceCard(
                             instance: instance,

@@ -233,6 +233,78 @@ final class FirebaseManager: ObservableObject {
         try await saveRoomInstance(updated)
     }
     
+    /// Delete playlist from a room instance
+    func deletePlaylist(_ instance: RoomInstance) async throws {
+        guard let db = db, let uid = currentUserId, let instanceId = instance.id else { return }
+        
+        // Use updateData to explicitly delete fields (merge: true won't work with nil values)
+        try await db.collection("users")
+            .document(uid)
+            .collection("rooms")
+            .document(instanceId)
+            .updateData([
+                "playlist": FieldValue.delete(),
+                "playlist_generated_at": FieldValue.delete(),
+                "music_context": FieldValue.delete()
+            ])
+        
+        print("🗑️ Firebase updateData completed")
+        await fetchRoomInstances()
+        print("🗑️ fetchRoomInstances completed, count: \(roomInstances.count)")
+    }
+    
+    /// Add observation to an instance
+    func addObservation(_ text: String, to instance: RoomInstance) async throws {
+        var updated = instance
+        updated.observations.append(text)
+        try await saveRoomInstance(updated)
+    }
+    
+    /// Generate narrative prose for a room instance using LLM
+    func generateNarrative(for instance: RoomInstance, definition: RoomDefinition) async throws {
+        guard let instanceId = instance.id else { return }
+        
+        let prompt = """
+        Write a ~250-word evocative prose narrative for this room.
+        
+        ROOM: \(definition.name) (Room \(definition.number))
+        FUNCTION: \(definition.function)
+        PHYSICS: \(definition.physicsHint)
+        ARCHETYPE: \(definition.archetype ?? "N/A")
+        VARIANT: \(instance.variantName.isEmpty ? "Default" : instance.variantName)
+        EVOCATIVE: \(definition.evocativeDescription ?? "N/A")
+        
+        STYLE RULES:
+        1. ROOM FRAME: Start by defining the physical limits of this space
+        2. DIRECT ASSERTION: State what things ARE (never "not X, but Y")
+        3. NO META-COMMENTARY: Don't explain logic, just state reality
+        4. Active voice only, no onomatopoeia
+        5. Derive consequences from the room's physical law
+        
+        ANALYSIS TO WEAVE IN:
+        - Phenomenology: What is the experience of time/space here? What do inhabitants share?
+        - Structure: What is valued? What are the unspoken rules? What behaviors are internalized?
+        - System: What does this room DO? What is its core binary distinction?
+        
+        OUTPUT: Literary prose in the style of Italo Calvino's Invisible Cities.
+        No headers, no bullet points, no explanations. Just the prose.
+        """
+        
+        let result = try await functions.httpsCallable("callGemini").call([
+            "prompt": prompt,
+            "systemPrompt": "You are a literary author writing evocative, constraint-driven prose about spaces. Write like Calvino.",
+            "model": "gemini-2.0-flash"
+        ])
+        
+        if let data = result.data as? [String: Any],
+           let text = data["text"] as? String {
+            var updated = instance
+            updated.narrative = text
+            try await saveRoomInstance(updated)
+            await fetchRoomInstances()
+        }
+    }
+    
     /// Create a new instance of a room class directly
     func createInstance(
         definitionId: String,

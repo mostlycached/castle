@@ -113,7 +113,7 @@ struct WorkshopView: View {
                     ForEach(sortedInstances) { instance in
                         if let definition = roomLoader.definition(for: instance.definitionId) {
                             NavigationLink {
-                                InstanceDetailView(definition: definition, instance: instance)
+                                InstanceDetailView(definition: definition, initialInstance: instance)
                             } label: {
                                 HealthCard(instance: instance, definition: definition)
                             }

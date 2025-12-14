@@ -6,73 +6,109 @@
                 "number": "001",
                 "name": "The Crypt",
                 "physics_hint": "Low D, Low A. Total shutdown.",
-                "function": "Sensory deprivation. Resetting the nervous system."
+                "function": "Sensory deprivation. Resetting the nervous system.",
+                "archetype": "The Sanctuary",
+                "input_logic": "No external stimuli permitted. Light = 0. Sound = 0. Temperature = Womb.",
+                "output_logic": "The only output is the gradual return to neurological baseline\u2014the reset of cortisol, the draining of arousal."
             },
             {
                 "number": "002",
                 "name": "The Bath",
                 "physics_hint": "Low D, Low A. Liquid state.",
-                "function": "Dissolution of muscle tension."
+                "function": "Dissolution of muscle tension.",
+                "archetype": "The Dissolver",
+                "input_logic": "Heat as the only permitted energy input. No cognitive demands.",
+                "output_logic": "Export of lactic acid, cortisol. The body surrenders its crystallized stress."
             },
             {
                 "number": "003",
                 "name": "The Garden",
                 "physics_hint": "Low D, Low A. Organic growth.",
-                "function": "Slow observation of nature. Low stakes."
+                "function": "Slow observation of nature. Low stakes.",
+                "archetype": "The Slowness Machine",
+                "input_logic": "Only biophilic stimuli permitted\u2014green, growth, soil, sky. Complexity without urgency.",
+                "output_logic": "Nervous system entrains to botanical tempo. Parasympathetic dominance emerges."
             },
             {
                 "number": "004",
                 "name": "The Monastery Cell",
                 "physics_hint": "Low D, Low A. Boredom induction.",
-                "function": "Dopamine fasting. Facing the void."
+                "function": "Dopamine fasting. Facing the void.",
+                "archetype": "The Void Confronter",
+                "input_logic": "Zero novel stimuli. The same four walls. The same view. Same temperature.",
+                "output_logic": "Tolerance levels reset. Small pleasures regain their power."
             },
             {
                 "number": "005",
                 "name": "The Incubator",
                 "physics_hint": "Low D, Low A. Passive processing.",
-                "function": "Nap/Daydream. Subconscious problem solving."
+                "function": "Nap/Daydream. Subconscious problem solving.",
+                "archetype": "The Background Processor",
+                "input_logic": "Problem loaded into working memory before entry, then released.",
+                "output_logic": "Insight, clarity, or reframing\u2014often upon waking or during exit."
             },
             {
                 "number": "006",
                 "name": "The Sick Bay",
                 "physics_hint": "Low D, Low A. Healing mode.",
-                "function": "Acknowledging fragility. Comfort."
+                "function": "Acknowledging fragility. Comfort.",
+                "archetype": "The Mercy Room",
+                "input_logic": "Comfort stimuli only. Warmth, softness, nourishment. Zero demands.",
+                "output_logic": "Gradual restoration of energy reserves. Permission to be weak."
             },
             {
                 "number": "007",
                 "name": "The Hearth",
                 "physics_hint": "Low D, Low A. Primordial safety.",
-                "function": "Staring at fire/light to stabilize the mind."
+                "function": "Staring at fire/light to stabilize the mind.",
+                "archetype": "The Primordial Anchor",
+                "input_logic": "Fire-light (or suitable substitute) as sole visual input. Crackling or ambient sound.",
+                "output_logic": "Attention anchors. The mind stops its scattered wandering. Alpha wave states emerge."
             },
             {
                 "number": "008",
                 "name": "The Library (Quiet)",
                 "physics_hint": "Low D, Low A. Passive absorption.",
-                "function": "Silence shared with the dead (books)."
+                "function": "Silence shared with the dead (books).",
+                "archetype": "The Communion of Ghosts",
+                "input_logic": "Presence of books as informational potential energy. No urgent reading required.",
+                "output_logic": "A sense of continuity with history. Smallness of self. Peace of the inherited."
             },
             {
                 "number": "009",
                 "name": "The Analog Loop",
                 "physics_hint": "Low D, Moderate A. Repetitive motion.",
-                "function": "Soothing anxiety through knitting, vinyl, sketching."
+                "function": "Soothing anxiety through knitting, vinyl, sketching.",
+                "archetype": "The Rhythmic Soother",
+                "input_logic": "A simple, repetitive physical task with tactile feedback.",
+                "output_logic": "Nervous system synchronizes to external rhythm. Anxiety dampens."
             },
             {
                 "number": "010",
                 "name": "The Swamp",
                 "physics_hint": "Low D, Low A. Permitted indulgence.",
-                "function": "Designated rotting zone. Doomscrolling (Time-boxed)."
+                "function": "Designated rotting zone. Doomscrolling (Time-boxed).",
+                "archetype": "The Permitted Vice",
+                "input_logic": "Doomscrolling, junk TV, video games\u2014whatever constitutes your personal low-value attractor.",
+                "output_logic": "Craving satisfied. Resistance fatigue avoided. Clear conscience for bounded indulgence."
             },
             {
                 "number": "011",
                 "name": "The Basecamp",
                 "physics_hint": "Low D, Moderate A. Preparation.",
-                "function": "Calibrating supplies (food/coffee) before the climb."
+                "function": "Calibrating supplies (food/coffee) before the climb.",
+                "archetype": "The Pre-Launch Calibrator",
+                "input_logic": "Simple, intentional consumption of preparatory substances.",
+                "output_logic": "Body primed for upcoming demands. No deficits."
             },
             {
                 "number": "012",
                 "name": "The Airlock",
                 "physics_hint": "Transitional State.",
-                "function": "Decompression between worlds (commute/hallway)."
+                "function": "Decompression between worlds (commute/hallway).",
+                "archetype": "The Phase Transition Chamber",
+                "input_logic": "State from previous room (work, home, public, private).",
+                "output_logic": "Gradual acclimatization to the next room's demands."
             }
         ]
     },
@@ -83,73 +119,109 @@
                 "number": "013",
                 "name": "The Morning Chapel",
                 "physics_hint": "Low D, High A. Signal calibration.",
-                "function": "Setting the trajectory. Zero external input."
+                "function": "Setting the trajectory. Zero external input.",
+                "archetype": "The Signal Calibrator",
+                "input_logic": "Zero external input. No news. No email. No notifications.",
+                "output_logic": "Trajectory set. Values clarified. Internal compass aligned."
             },
             {
                 "number": "014",
                 "name": "The Archive",
                 "physics_hint": "Low D, High A. Storage management.",
-                "function": "Categorizing the past. Freeing up RAM."
+                "function": "Categorizing the past. Freeing up RAM.",
+                "archetype": "The Memory Organizer",
+                "input_logic": "Unprocessed experiences, notes, photos, artifacts, memories.",
+                "output_logic": "Organized storage. Tags applied. Connections made. RAM freed."
             },
             {
                 "number": "015",
                 "name": "The Map Room",
                 "physics_hint": "Low D, High A. Strategy.",
-                "function": "High-level view of trajectory. Whiteboarding."
+                "function": "High-level view of trajectory. Whiteboarding.",
+                "archetype": "The Strategic Elevation",
+                "input_logic": "Current position, goals, obstacles, resources, trajectories.",
+                "output_logic": "High-level plan. Identified leverage points. Clarified direction."
             },
             {
                 "number": "016",
                 "name": "The Checkpoint",
                 "physics_hint": "Low D, High A. Audit.",
-                "function": "Weekly review. Assessing resources/constraints."
+                "function": "Weekly review. Assessing resources/constraints.",
+                "archetype": "The Periodic Auditor",
+                "input_logic": "Data from the past week: completed tasks, missed targets, emotional state, resource levels.",
+                "output_logic": "Course corrections. Priority adjustments. Renewed commitment or strategic pivot."
             },
             {
                 "number": "017",
                 "name": "The Waiting Room",
                 "physics_hint": "Low D, High A. Forced patience.",
-                "function": "Observing time without agency."
+                "function": "Observing time without agency.",
+                "archetype": "The Patience Enforcer",
+                "input_logic": "Time that is not yours to control. External constraint on progress.",
+                "output_logic": "Patience practiced. Equanimity strengthened. Acceptance of powerlessness."
             },
             {
                 "number": "018",
                 "name": "The Editor's Desk",
                 "physics_hint": "Low D, High A. Subtractive processing.",
-                "function": "Code review, polishing, cutting."
+                "function": "Code review, polishing, cutting.",
+                "archetype": "The Subtractive Refiner",
+                "input_logic": "Raw creation\u2014drafts, code, designs, un-reviewed work.",
+                "output_logic": "Polished artifact. Tighter, cleaner, truer than before."
             },
             {
                 "number": "019",
                 "name": "The Clean Room",
                 "physics_hint": "Low D, High A. Physical order.",
-                "function": "Cleaning, dishes. Restoring environment."
+                "function": "Cleaning, dishes. Restoring environment.",
+                "archetype": "The Environmental Restorer",
+                "input_logic": "Chaos\u2014dishes, dust, clutter, disarray.",
+                "output_logic": "Order\u2014surfaces clear, tools in place, environment supporting function."
             },
             {
                 "number": "020",
                 "name": "The Confessional",
                 "physics_hint": "Low D, High A. Shadow work.",
-                "function": "Journaling. Admitting failures/sins."
+                "function": "Journaling. Admitting failures/sins.",
+                "archetype": "The Shadow Integrator",
+                "input_logic": "Failures, sins, broken promises, shameful truths\u2014the things you avoid.",
+                "output_logic": "Acknowledged debt. Reduced shame. Integration of shadow."
             },
             {
                 "number": "021",
                 "name": "The Classroom",
                 "physics_hint": "Low D, High A. Structured intake.",
-                "function": "Lecture, tutorial, skill acquisition."
+                "function": "Lecture, tutorial, skill acquisition.",
+                "archetype": "The Structured Receptor",
+                "input_logic": "Curated teaching material\u2014lectures, tutorials, courses. Not random browsing.",
+                "output_logic": "Knowledge delta. Skill acquisition. Conceptual frameworks installed."
             },
             {
                 "number": "022",
                 "name": "The Courtroom",
                 "physics_hint": "Low D, High A. Judgment.",
-                "function": "Weighing decisions. Finalizing choice."
+                "function": "Weighing decisions. Finalizing choice.",
+                "archetype": "The Decision Tribunal",
+                "input_logic": "Unresolved choices. Competing options. Suspended judgment.",
+                "output_logic": "Decision made. Uncertainty collapsed. Path committed."
             },
             {
                 "number": "023",
                 "name": "The Post Office",
                 "physics_hint": "Low D, High A. Dispatch.",
-                "function": "Email/Slack processing. Clearing the queue."
+                "function": "Email/Slack processing. Clearing the queue.",
+                "archetype": "The Queue Processor",
+                "input_logic": "Email, Slack, messages, DMs\u2014the inbound queue.",
+                "output_logic": "Processed queue. Responses sent. Items delegated or deleted. Inbox zero (or near)."
             },
             {
                 "number": "024",
                 "name": "The Vault",
                 "physics_hint": "Low D, High A. Security.",
-                "function": "Password management, backups, finances."
+                "function": "Password management, backups, finances.",
+                "archetype": "The Security Maintainer",
+                "input_logic": "Access credentials, backup schedules, financial accounts, security hygiene.",
+                "output_logic": "Updated security. Verified backups. Confirmed access. Reduced vulnerability."
             }
         ]
     },
@@ -160,73 +232,151 @@
                 "number": "025",
                 "name": "The Cockpit",
                 "physics_hint": "High D, High A. Velocity.",
-                "function": "God-mode technical execution. IDE/Terminal."
+                "function": "God-mode technical execution. IDE/Terminal.",
+                "archetype": "The Velocity Engine",
+                "input_logic": "Pre-defined task queue. Clear objectives. All resources staged.",
+                "output_logic": "Code shipped. Words written. Miles covered. Maximum output per unit time."
             },
             {
                 "number": "026",
                 "name": "The Forge",
                 "physics_hint": "High D, High A. Resistance.",
-                "function": "Heavy lifting, intense physical labor."
+                "function": "Heavy lifting, intense physical labor.",
+                "archetype": "The Resistance Overcomer",
+                "input_logic": "Physical task requiring effort. Moving, lifting, building, exerting.",
+                "output_logic": "Material transformed by labor. Body strengthened. Resistance overcome."
             },
             {
                 "number": "027",
                 "name": "The Studio (Closed)",
                 "physics_hint": "Internal High D, High A. Aperture.",
-                "function": "Deep creative synthesis. No exit."
+                "function": "Deep creative synthesis. No exit.",
+                "archetype": "The Aperture",
+                "input_logic": "Internal only. Memory, imagination, prepared material. No new research.",
+                "output_logic": "Original creation. Novel synthesis. The work that only you could make."
             },
             {
                 "number": "028",
                 "name": "The Kitchen (Service)",
                 "physics_hint": "High D, High A. Multi-tasking.",
-                "function": "Flow state under pressure. Cooking."
+                "function": "Flow state under pressure. Cooking.",
+                "archetype": "The Flow Under Fire",
+                "input_logic": "Multiple parallel demands with real-time synchronization requirements.",
+                "output_logic": "Completed service. Plates out. Crisis managed. Flow state under pressure."
             },
             {
                 "number": "029",
                 "name": "The Arena",
                 "physics_hint": "High D, High A. Performance.",
-                "function": "Public speaking, competing. High stakes."
+                "function": "Public speaking, competing. High stakes.",
+                "archetype": "The Performance Crucible",
+                "input_logic": "Preparation complete. Audience present. Stakes real.",
+                "output_logic": "Performance delivered. Judgment received. Growth from exposure."
             },
             {
                 "number": "030",
                 "name": "The Sprint",
                 "physics_hint": "High D, High A. Time-boxed Velocity.",
-                "function": "Hackathon mode. Max output, min time."
+                "function": "Hackathon mode. Max output, min time.",
+                "archetype": "The Time Compressor",
+                "input_logic": "Well-defined deliverable. Hard deadline. No scope creep.",
+                "output_logic": "Artifact produced. Shipped. Done\u2014not perfect, but *done*."
             },
             {
                 "number": "031",
                 "name": "The Laboratory",
                 "physics_hint": "High D, High A. Experimentation.",
-                "function": "Debugging, testing hypotheses."
+                "function": "Debugging, testing hypotheses.",
+                "archetype": "The Hypothesis Tester",
+                "physics_description": "The Laboratory is where ideas meet reality. Unlike The Studio, which creates from imagination, The Laboratory creates experiments\u2014structured tests that return data about what works.",
+                "equation": "H_0 \u2192 {H_0 confirmed, H_0 refuted}; D_out = f(D_in, H)",
+                "input_logic": "Hypothesis, test design, controlled conditions.",
+                "output_logic": "Data. Not opinion\u2014*data*. What actually happened when you tried.",
+                "evocative_quote": "There are no facts, only interpretations.",
+                "evocative_description": "But some interpretations are more expensive than others. The Laboratory is where you pay the cost of finding out. Here, speculation ends and experimentation begins. The room does not care about your theories. It cares about what happens when you run the code, deploy the feature, test the assumption. The Laboratory humbles the arrogant and rewards the curious.",
+                "constraints": [
+                    {
+                        "name": "The Hypothesis First",
+                        "description": "You must enter with a specific question. 'What if I...'"
+                    },
+                    {
+                        "name": "The Measurement Mandate",
+                        "description": "You must know what data you're collecting and how."
+                    },
+                    {
+                        "name": "The Acceptance of Results",
+                        "description": "The Laboratory's verdict is final. You do not argue with outcomes."
+                    }
+                ],
+                "altar": [
+                    {
+                        "name": "The Test Environment",
+                        "description": "Sandbox, staging server, prototype, controlled conditions."
+                    },
+                    {
+                        "name": "The Instrumentation",
+                        "description": "Logs, metrics, sensors. What measures the result."
+                    },
+                    {
+                        "name": "The Lab Notebook",
+                        "description": "Record of hypotheses, methods, results. Science demands records."
+                    }
+                ],
+                "liturgy": {
+                    "entry": "State the hypothesis: 'I believe X will cause Y.' Write it down. Design the test.",
+                    "step_1": "Run the experiment. Do not interfere mid-test. Let reality answer.",
+                    "step_2": "Observe results. Did the hypothesis hold? Record the data, not your preference.",
+                    "exit": "Document the findings. Say: 'I now know something I did not before.' Proceed with the new knowledge."
+                },
+                "trap": {
+                    "leak": "Cherry-picking data. Running the experiment until it gives the desired result.",
+                    "result": "False Confidence. You believe something works because you only counted the successes. The Laboratory was corrupted. Your next decision rests on polluted data."
+                }
             },
             {
                 "number": "032",
                 "name": "The Cathedral",
                 "physics_hint": "High D, High A. Awe/Structure.",
-                "function": "Listening to complex music. Aligning with order."
+                "function": "Listening to complex music. Aligning with order.",
+                "archetype": "The Awe Alignment Device",
+                "input_logic": "High-complexity, high-structure music. Active listening, not background noise.",
+                "output_logic": "Internal state aligned with beauty. Order felt, not thought. Inspiration for structured creation."
             },
             {
                 "number": "033",
                 "name": "The Hive",
                 "physics_hint": "Moderate D, High A. Co-resonance.",
-                "function": "Borrowing focus from others (Coworking)."
+                "function": "Borrowing focus from others (Coworking).",
+                "archetype": "The Social Focus Amplifier",
+                "input_logic": "Presence in a shared work environment. Others focusing nearby.",
+                "output_logic": "Increased personal focus. Reduced temptation to defect. Borrowed discipline."
             },
             {
                 "number": "034",
                 "name": "The Dojo",
                 "physics_hint": "High D, High A. Repetition.",
-                "function": "Drills, scales, Leetcode. Deepening skill."
+                "function": "Drills, scales, Leetcode. Deepening skill.",
+                "archetype": "The Repetition Grinder",
+                "input_logic": "Isolated skills. Known weaknesses. Targeted repetition.",
+                "output_logic": "Automatic competence. Skill transferred from conscious to unconscious."
             },
             {
                 "number": "035",
                 "name": "The War Room",
                 "physics_hint": "High D, High A. Mobilization.",
-                "function": "Crisis management. Crunch time."
+                "function": "Crisis management. Crunch time.",
+                "archetype": "The Crisis Engine",
+                "input_logic": "Crisis signal. Broken production. Existential threat. Time pressure.",
+                "output_logic": "Resolution. Problem solved, contained, or triaged. Return from emergency footing."
             },
             {
                 "number": "036",
                 "name": "The Altar of Work",
                 "physics_hint": "High D, High A. Completion.",
-                "function": "Shipping. The final seal."
+                "function": "Shipping. The final seal.",
+                "archetype": "The Seal of Completion",
+                "input_logic": "Work that is ready (or ready enough) to ship.",
+                "output_logic": "Published, deployed, sent, submitted. Irrevocable transmission."
             }
         ]
     },
@@ -237,73 +387,109 @@
                 "number": "037",
                 "name": "The Intersection",
                 "physics_hint": "High D, Low A. Overwhelming input.",
-                "function": "Watching the stream (City/Times Sq)."
+                "function": "Watching the stream (City/Times Sq).",
+                "archetype": "The Overwhelm Zone",
+                "input_logic": "Overwhelming sensory and informational inflow. No curation.",
+                "output_logic": "Forced expansion of bandwidth. Humility before complexity. Serendipitous encounter."
             },
             {
                 "number": "038",
                 "name": "The Nightclub",
                 "physics_hint": "High D, Low A. Dissolution.",
-                "function": "Physical ecstasy. Dancing. Loud music."
+                "function": "Physical ecstasy. Dancing. Loud music.",
+                "archetype": "The Dissolution Chamber",
+                "input_logic": "Loud rhythmic music. Darkness. Physical movement.",
+                "output_logic": "Egodeath-lite. Ecstatic release. The controlled loosening of identity boundaries."
             },
             {
                 "number": "039",
                 "name": "The Mosh Pit",
                 "physics_hint": "High D, Low A. Collision.",
-                "function": "Aggression release. Protest/Riot."
+                "function": "Aggression release. Protest/Riot.",
+                "archetype": "The Collision Zone",
+                "input_logic": "Pent-up aggression, rage, physical energy demanding outlet.",
+                "output_logic": "Cathartic discharge. The beast fed and satisfied."
             },
             {
                 "number": "040",
                 "name": "The Casino",
                 "physics_hint": "High D, Low A. Probability.",
-                "function": "Risk-taking, investing, gambling."
+                "function": "Risk-taking, investing, gambling.",
+                "archetype": "The Risk Chamber",
+                "input_logic": "Capital (money, time, reputation) placed at risk.",
+                "output_logic": "Win or loss. The felt experience of uncertainty and consequence."
             },
             {
                 "number": "041",
                 "name": "The Wilderness",
                 "physics_hint": "High D, Low A. Wayfinding.",
-                "function": "Hiking off-trail. Relying on instinct."
+                "function": "Hiking off-trail. Relying on instinct.",
+                "archetype": "The Instinct Reclaimer",
+                "input_logic": "Unmarked territory. Natural environment. Self as sole navigator.",
+                "output_logic": "Reactivated animal sense. Trust in body-wisdom. Awe before the untamed."
             },
             {
                 "number": "042",
                 "name": "The Improv Stage",
                 "physics_hint": "High D, Low A. Generative.",
-                "function": "'Yes, And'. Brainstorming without judgment."
+                "function": "'Yes, And'. Brainstorming without judgment.",
+                "archetype": "The Generative Uncensor",
+                "input_logic": "A prompt, a partner, or pure impulse.",
+                "output_logic": "Generative output uncensored. Quantity over quality. Ideas born without filter."
             },
             {
                 "number": "043",
                 "name": "The Sandbox",
                 "physics_hint": "High D, Low A. Play.",
-                "function": "New hobby. Low stakes curiosity."
+                "function": "New hobby. Low stakes curiosity.",
+                "archetype": "The Beginner's Zone",
+                "input_logic": "A new domain. No prior competence.",
+                "output_logic": "Renewed beginner's mind. Remember what learning feels like."
             },
             {
                 "number": "044",
                 "name": "The Feast",
                 "physics_hint": "High D, Low A. Gluttony.",
-                "function": "Sensory overload. Messy dinner party."
+                "function": "Sensory overload. Messy dinner party.",
+                "archetype": "The Abundance Immersion",
+                "input_logic": "Rich food, strong drink, loud talk, sensory abundance.",
+                "output_logic": "Satiation. Gratitude. Memory of pleasure that sustains through leaner times."
             },
             {
                 "number": "045",
                 "name": "The Comedy Club",
                 "physics_hint": "High D, Low A. Absurdity.",
-                "function": "Deconstructing truth through humor."
+                "function": "Deconstructing truth through humor.",
+                "archetype": "The Absurdity Revealer",
+                "input_logic": "Curated comedy. Stand-up, satire, absurdist content.",
+                "output_logic": "Perspective shift. Released tension. The seriousness broken."
             },
             {
                 "number": "046",
                 "name": "The Storm Chaser",
                 "physics_hint": "High D, Low A. Sublime.",
-                "function": "Walking in rain/snow. Nature's power."
+                "function": "Walking in rain/snow. Nature's power.",
+                "archetype": "The Sublime Encounter",
+                "input_logic": "Extreme weather, vast landscapes, oceanic power\u2014nature in dominance.",
+                "output_logic": "Ego diminished. Perspective expanded. The small self remembered."
             },
             {
                 "number": "047",
                 "name": "The Market",
                 "physics_hint": "High D, Low A. Hunting.",
-                "function": "Flea market/Twitter. Finding signal in noise."
+                "function": "Flea market/Twitter. Finding signal in noise.",
+                "archetype": "The Signal Hunter",
+                "input_logic": "Unstructured noise\u2014vendors, posts, conversations. No curation.",
+                "output_logic": "Discovered signal. The rare find. The unexpected connection."
             },
             {
                 "number": "048",
                 "name": "The Void (Active)",
                 "physics_hint": "High D, Low A. Confrontation.",
-                "function": "Staring into the abyss. Existential dread."
+                "function": "Staring into the abyss. Existential dread.",
+                "archetype": "The Abyss Gazer",
+                "input_logic": "Mortality contemplation. Nihilism. The unanswerable questions.",
+                "output_logic": "Either collapse or integration. The existential immune system is tested."
             }
         ]
     },
@@ -314,73 +500,109 @@
                 "number": "049",
                 "name": "The River",
                 "physics_hint": "Medium D, Medium A. Anonymity.",
-                "function": "Alone together (Cafe). White noise."
+                "function": "Alone together (Cafe). White noise.",
+                "archetype": "The Anonymous Commons",
+                "input_logic": "A shared space with others. No conversation. White noise of humanity.",
+                "output_logic": "Reduced loneliness without social demand. Focus boosted by ambient presence."
             },
             {
                 "number": "050",
                 "name": "The Salon",
                 "physics_hint": "Medium D, Medium A. Dialectic.",
-                "function": "Intellectual debate. Testing ideas."
+                "function": "Intellectual debate. Testing ideas.",
+                "archetype": "The Dialectic Arena",
+                "input_logic": "Your ideas, exposed to adversarial scrutiny.",
+                "output_logic": "Refined positions. Discovered weaknesses. Stronger understanding."
             },
             {
                 "number": "051",
                 "name": "The Campfire",
                 "physics_hint": "Medium D, Low A. Vulnerability.",
-                "function": "Storytelling. Intimacy."
+                "function": "Storytelling. Intimacy.",
+                "archetype": "The Vulnerability Circle",
+                "input_logic": "Personal stories. Honest sharing. The removal of masks.",
+                "output_logic": "Deep connection. Understood. Known."
             },
             {
                 "number": "052",
                 "name": "The Negotiating Table",
                 "physics_hint": "High D, High A. Conflict.",
-                "function": "Clash of wills. Compromise."
+                "function": "Clash of wills. Compromise.",
+                "archetype": "The Conflict Converter",
+                "input_logic": "Conflicting interests. Resources to be allocated. Positions to be reconciled.",
+                "output_logic": "Agreement or principled disagreement. Path forward, or clarity that there is none."
             },
             {
                 "number": "053",
                 "name": "The Piazza",
                 "physics_hint": "Low D, Low A. Spectacle.",
-                "function": "People watching. Flânerie."
+                "function": "People watching. Fl\u00e2nerie.",
+                "archetype": "The Spectator's Bench",
+                "input_logic": "The passing parade of humanity. Fashion, gait, drama, connection.",
+                "output_logic": "Renewed appreciation for the variety of being. Distance from one's own narrative."
             },
             {
                 "number": "054",
                 "name": "The Broadcast",
                 "physics_hint": "High D, High A. Transmission.",
-                "function": "Publishing, posting, speaking."
+                "function": "Publishing, posting, speaking.",
+                "archetype": "The Signal Transmitter",
+                "input_logic": "Message crafted and prepared. Medium selected.",
+                "output_logic": "Signal transmitted. Ideas planted in unseen minds."
             },
             {
                 "number": "055",
                 "name": "The Reception",
                 "physics_hint": "Low D, Medium A. Scanning.",
-                "function": "Networking. Surface connection."
+                "function": "Networking. Surface connection.",
+                "archetype": "The Surface Connector",
+                "input_logic": "A gathering of strangers or acquaintances. An agenda of opportunity.",
+                "output_logic": "Many surface connections. A few leads for deeper follow-up."
             },
             {
                 "number": "056",
                 "name": "The Confidant's Room",
                 "physics_hint": "Low D, High A. Resonance.",
-                "function": "1-on-1 trust. Deep connection."
+                "function": "1-on-1 trust. Deep connection.",
+                "archetype": "The Deep Bond",
+                "input_logic": "Time with the trusted one. The full, unfiltered self.",
+                "output_logic": "Deep connection. Understanding. Counsel that matters."
             },
             {
                 "number": "057",
                 "name": "The Mentor's Office",
                 "physics_hint": "Low D, High A. Transfer.",
-                "function": "Teaching or being taught."
+                "function": "Teaching or being taught.",
+                "archetype": "The Wisdom Transfer",
+                "input_logic": "A mentor with knowledge to share, or a student seeking guidance.",
+                "output_logic": "Accelerated learning. Shortened learning curves. Transmitted wisdom."
             },
             {
                 "number": "058",
                 "name": "The Team Huddle",
                 "physics_hint": "Medium D, High A. Sync.",
-                "function": "Aligning state vectors."
+                "function": "Aligning state vectors.",
+                "archetype": "The Vector Aligner",
+                "input_logic": "Team members with individual contexts, agendas, blockers.",
+                "output_logic": "Synchronized state. Shared understanding. Coordinated action."
             },
             {
                 "number": "059",
                 "name": "The Public Square",
                 "physics_hint": "Medium D, High A. Civic Duty.",
-                "function": "Voting, volunteering. Participation."
+                "function": "Voting, volunteering. Participation.",
+                "archetype": "The Civic Participation Point",
+                "input_logic": "Civic opportunity\u2014election, community service, public comment.",
+                "output_logic": "Contribution to the commons. Sense of belonging to something larger."
             },
             {
                 "number": "060",
                 "name": "The Mask",
                 "physics_hint": "Variable D, Variable A. Simulation.",
-                "function": "Acting, role-playing, avatar."
+                "function": "Acting, role-playing, avatar.",
+                "archetype": "The Role Simulator",
+                "input_logic": "A role to play, an avatar to inhabit, a persona to try on.",
+                "output_logic": "Expanded behavioral range. Self-knowledge through contrast."
             }
         ]
     },
@@ -391,73 +613,109 @@
                 "number": "061",
                 "name": "The Bridge",
                 "physics_hint": "Meta-State. Z-Axis.",
-                "function": "Dashboard. Choosing the room."
+                "function": "Dashboard. Choosing the room.",
+                "archetype": "The Director's Console",
+                "input_logic": "Current state: energy level, mood, backlog, priorities.",
+                "output_logic": "Decision about which room to enter next. Self-location in the system."
             },
             {
                 "number": "062",
                 "name": "The Lighthouse",
                 "physics_hint": "Meta-State. Long Horizon.",
-                "function": "Looking at the future. Beaming light."
+                "function": "Looking at the future. Beaming light.",
+                "archetype": "The Future Gazer",
+                "input_logic": "Present identity, values, vision.",
+                "output_logic": "Long-term direction. The purpose that orients daily choices."
             },
             {
                 "number": "063",
                 "name": "The Museum",
                 "physics_hint": "Meta-State. Past Horizon.",
-                "function": "Curating memory. Narrative construction."
+                "function": "Curating memory. Narrative construction.",
+                "archetype": "The Memory Curator",
+                "input_logic": "Raw memories, past events, historical self.",
+                "output_logic": "Coherent narrative. Understanding of the journey. Identity grounded in history."
             },
             {
                 "number": "064",
                 "name": "The Camera Obscura",
                 "physics_hint": "Meta-State. Detachment.",
-                "function": "Pure observation. 'I am not the wave'."
+                "function": "Pure observation. 'I am not the wave'.",
+                "archetype": "The Witness Seat",
+                "input_logic": "Any experience\u2014thought, emotion, sensation\u2014currently arising.",
+                "output_logic": "Detached awareness. \"This is happening\" without \"This is me.\""
             },
             {
                 "number": "065",
                 "name": "The Simulator",
                 "physics_hint": "Meta-State. Pre-computation.",
-                "function": "Visualizing scenarios. Stoic premeditation."
+                "function": "Visualizing scenarios. Stoic premeditation.",
+                "archetype": "The Future Runner",
+                "input_logic": "An upcoming situation with uncertainty.",
+                "output_logic": "Pre-computed responses. Reduced surprise. Stoic equanimity."
             },
             {
                 "number": "066",
                 "name": "The Satellite",
                 "physics_hint": "Meta-State. Distance.",
-                "function": "Travel (Plane mode). Perspective shift."
+                "function": "Travel (Plane mode). Perspective shift.",
+                "archetype": "The Perspective Shifter",
+                "input_logic": "Travel, relocation, or meditative distance.",
+                "output_logic": "Clarified priorities. Things that seemed important shrink. Things that seemed small grow."
             },
             {
                 "number": "067",
                 "name": "The Dream Journal",
                 "physics_hint": "Meta-State. Decoding.",
-                "function": "Analyzing subconscious signals."
+                "function": "Analyzing subconscious signals.",
+                "archetype": "The Subconscious Interpreter",
+                "input_logic": "Dream content, captured immediately upon waking.",
+                "output_logic": "Insight into hidden concerns, desires, fears. Subconscious patterns revealed."
             },
             {
                 "number": "068",
                 "name": "The Tarot / I-Ching",
                 "physics_hint": "Meta-State. Randomization.",
-                "function": "Lateral thinking. Breaking loops."
+                "function": "Lateral thinking. Breaking loops.",
+                "archetype": "The Pattern Breaker",
+                "input_logic": "A question or situation where you feel stuck.",
+                "output_logic": "A new angle. Not \"the answer\"\u2014but an angle you hadn't considered."
             },
             {
                 "number": "069",
                 "name": "The Silent Retreat",
                 "physics_hint": "Meta-State. Reboot.",
-                "function": "Extended withdrawal. System flush."
+                "function": "Extended withdrawal. System flush.",
+                "archetype": "The Total Flush",
+                "input_logic": "Days of silence. No communication, no obligation, no content.",
+                "output_logic": "Deep recalibration. Neurological reset. Clarity unavailable otherwise."
             },
             {
                 "number": "070",
                 "name": "The Eulogy",
                 "physics_hint": "Meta-State. Urgency.",
-                "function": "Memento Mori. Death contemplation."
+                "function": "Memento Mori. Death contemplation.",
+                "archetype": "The Mortality Reminder",
+                "input_logic": "The fact of mortality. The question: how do I want to be remembered?",
+                "output_logic": "Urgency. Clarified priorities. Wasted time exposed."
             },
             {
                 "number": "071",
                 "name": "The Totem",
                 "physics_hint": "Meta-State. Grounding.",
-                "function": "Tactile anchor. Holding an object."
+                "function": "Tactile anchor. Holding an object.",
+                "archetype": "The Tactile Anchor",
+                "input_logic": "A physical object held in the hand.",
+                "output_logic": "Grounded presence. Reduced dissociation. The body remembered."
             },
             {
                 "number": "072",
                 "name": "The Exit",
                 "physics_hint": "Meta-State. Freedom.",
-                "function": "The door. The ability to leave."
+                "function": "The door. The ability to leave.",
+                "archetype": "The Door",
+                "input_logic": "The feeling of being trapped, obligated, without options.",
+                "output_logic": "Remembered agency. The knowledge that you can leave\u2014even if you choose to stay."
             }
         ]
     }

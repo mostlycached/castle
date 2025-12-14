@@ -4,6 +4,7 @@
 import Foundation
 import AVFoundation
 import Combine
+import MediaPlayer
 
 @MainActor
 class MusicService: ObservableObject {
@@ -30,6 +31,7 @@ class MusicService: ObservableObject {
     
     private init() {
         setupAudioSession()
+        setupRemoteTransportControls()
     }
     
     // MARK: - Audio Session
@@ -41,6 +43,64 @@ class MusicService: ObservableObject {
         } catch {
             print("Failed to setup audio session: \(error)")
         }
+    }
+    
+    private func setupRemoteTransportControls() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        
+        // Play Command
+        commandCenter.playCommand.addTarget { [weak self] event in
+            guard let self = self else { return .commandFailed }
+            self.play()
+            return .success
+        }
+        
+        // Pause Command
+        commandCenter.pauseCommand.addTarget { [weak self] event in
+            guard let self = self else { return .commandFailed }
+            self.pause()
+            return .success
+        }
+        
+        // Next Track Command
+        commandCenter.nextTrackCommand.addTarget { [weak self] event in
+            guard let self = self else { return .commandFailed }
+            self.playNext()
+            return .success
+        }
+        
+        // Previous Track Command
+        commandCenter.previousTrackCommand.addTarget { [weak self] event in
+            guard let self = self else { return .commandFailed }
+            self.playPrevious()
+            return .success
+        }
+        
+        // Seek Command
+        commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
+            guard let self = self, let event = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
+            self.seek(to: event.positionTime)
+            return .success
+        }
+    }
+    
+    private func updateNowPlayingInfo() {
+        guard let track = currentTrack else {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            return
+        }
+        
+        var nowPlayingInfo = [String: Any]()
+        nowPlayingInfo[MPMediaItemPropertyTitle] = track.title
+        nowPlayingInfo[MPMediaItemPropertyArtist] = "Castle Room" // Or use room name if available context
+        
+        if let playerItem = playerItem {
+            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = playerItem.currentTime().seconds
+            nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = playerItem.duration.seconds
+            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+        }
+        
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
     
     // MARK: - Playback Control
@@ -62,10 +122,10 @@ class MusicService: ObservableObject {
         removeTimeObserver()
         player?.pause()
         
-        // Use local file if downloaded, otherwise stream from URL
+        // Use local file if downloaded and accessible, otherwise stream from URL
         let url: URL
-        if track.isDownloaded, let localPath = track.localPath {
-            url = URL(fileURLWithPath: localPath)
+        if let localUrl = resolveLocalURL(for: track) {
+            url = localUrl
         } else {
             guard let remoteUrl = URL(string: track.url) else {
                 isLoading = false
@@ -95,16 +155,19 @@ class MusicService: ObservableObject {
             .store(in: &cancellables)
         
         setupTimeObserver()
+        updateNowPlayingInfo()
     }
     
     func play() {
         player?.play()
         isPlaying = true
+        updateNowPlayingInfo()
     }
     
     func pause() {
         player?.pause()
         isPlaying = false
+        updateNowPlayingInfo()
     }
     
     func togglePlayback() {
@@ -119,6 +182,7 @@ class MusicService: ObservableObject {
         pause()
         player?.seek(to: .zero)
         currentTime = 0
+        updateNowPlayingInfo()
     }
     
     func playNext() {
@@ -151,7 +215,9 @@ class MusicService: ObservableObject {
     }
     
     func seek(to time: TimeInterval) {
-        player?.seek(to: CMTime(seconds: time, preferredTimescale: 1000))
+        player?.seek(to: CMTime(seconds: time, preferredTimescale: 1000)) { [weak self] _ in
+            self?.updateNowPlayingInfo()
+        }
     }
     
     func playTrack(at index: Int) {
@@ -179,7 +245,7 @@ class MusicService: ObservableObject {
     
     // MARK: - Download
     
-    func downloadTrack(_ track: RoomTrack, completion: @escaping (URL?) -> Void) {
+    func downloadTrack(_ track: RoomTrack, folderName: String? = nil, completion: @escaping (URL?) -> Void) {
         guard let url = URL(string: track.url) else {
             completion(nil)
             return
@@ -188,8 +254,21 @@ class MusicService: ObservableObject {
         downloadProgress[track.url] = 0
         
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let fileName = "\(track.title.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString.prefix(8)).mp3"
-        let localUrl = documentsPath.appendingPathComponent(fileName)
+        let destinationFolder: URL
+        
+        if let folderName = folderName {
+            destinationFolder = documentsPath.appendingPathComponent(folderName)
+            if !FileManager.default.fileExists(atPath: destinationFolder.path) {
+                try? FileManager.default.createDirectory(at: destinationFolder, withIntermediateDirectories: true)
+            }
+        } else {
+            destinationFolder = documentsPath
+        }
+        
+        // Use track title for filename if possible, sanitize it
+        let safeTitle = track.title.components(separatedBy: .init(charactersIn: "/\\?%*|\"<>:")).joined(separator: "_")
+        let fileName = "\(safeTitle).mp3"
+        let localUrl = destinationFolder.appendingPathComponent(fileName)
         
         let task = URLSession.shared.downloadTask(with: url) { [weak self] tempUrl, response, error in
             DispatchQueue.main.async {
@@ -206,7 +285,15 @@ class MusicService: ObservableObject {
                     try FileManager.default.removeItem(at: localUrl)
                 }
                 try FileManager.default.moveItem(at: tempUrl, to: localUrl)
-                completion(localUrl)
+                
+                // Return relative path for storage
+                let relativePath: String
+                if let folderName = folderName {
+                    relativePath = "\(folderName)/\(fileName)"
+                } else {
+                    relativePath = fileName
+                }
+                completion(URL(fileURLWithPath: relativePath))
             } catch {
                 print("Failed to save downloaded track: \(error)")
                 completion(nil)
@@ -217,14 +304,17 @@ class MusicService: ObservableObject {
         task.resume()
     }
     
-    func downloadPlaylist(_ playlist: [RoomTrack], progress: @escaping (Int, Int) -> Void, completion: @escaping ([RoomTrack]) -> Void) {
+    func downloadPlaylist(_ playlist: [RoomTrack], roomName: String? = nil, progress: @escaping (Int, Int) -> Void, completion: @escaping ([RoomTrack]) -> Void) {
         var updatedTracks: [RoomTrack] = []
         let group = DispatchGroup()
         var completedCount = 0
         
+        // Sanitize room name for folder
+        let folderName = roomName?.components(separatedBy: .init(charactersIn: "/\\?%*|\"<>:")).joined(separator: "_")
+        
         for track in playlist {
             group.enter()
-            downloadTrack(track) { localUrl in
+            downloadTrack(track, folderName: folderName) { localUrl in
                 var updatedTrack = track
                 if let url = localUrl {
                     updatedTrack.isDownloaded = true
@@ -264,5 +354,30 @@ class MusicService: ObservableObject {
         let mins = Int(seconds) / 60
         let secs = Int(seconds) % 60
         return String(format: "%d:%02d", mins, secs)
+    }
+    
+    private func resolveLocalURL(for track: RoomTrack) -> URL? {
+        guard track.isDownloaded, let path = track.localPath else { return nil }
+        
+        let fileManager = FileManager.default
+        
+        // 1. Check if it's an absolute path and exists (Legacy/Current session)
+        if path.hasPrefix("/") {
+            if fileManager.fileExists(atPath: path) {
+                return URL(fileURLWithPath: path)
+            }
+            // If absolute path doesn't exist, it might be due to container change
+            // Try to extract relative part and fallback?
+        }
+        
+        // 2. Treat as relative to Documents directory
+        let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fullUrl = documentsPath.appendingPathComponent(path)
+        
+        if fileManager.fileExists(atPath: fullUrl.path) {
+            return fullUrl
+        }
+        
+        return nil
     }
 }

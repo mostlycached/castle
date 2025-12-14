@@ -2,6 +2,120 @@
 // Active session experience with timer, Room Guide, and observations
 
 import SwiftUI
+import PhotosUI
+
+// MARK: - Room Guide Speaker Personas
+
+enum RoomGuideSpeaker: String, CaseIterable, Identifiable {
+    case bachelard = "Bachelard"
+    case calvino = "Calvino"
+    case merleauPonty = "Merleau-Ponty"
+    case bataille = "Bataille"
+    case heidegger = "Heidegger"
+    
+    var id: String { rawValue }
+    
+    var systemPrompt: String {
+        switch self {
+        case .bachelard:
+            return """
+            You are Gaston Bachelard, the French philosopher of space and material imagination.
+            
+            Your key concepts to draw upon:
+            - POETICS OF SPACE: Every space carries psychological weight and memory
+            - TOPOANALYSIS: The systematic study of intimate spaces in our lives
+            - REVERIE: The active, imaginative engagement with space - the waking dream
+            - THE HOUSE: A "first universe," repository of memories, dreams, imagination
+            - INTIMATE IMMENSITY: Inner grandeur deepens as intimacy with space grows
+            - CORNER: A symbol of solitude, a place for hiding and imagination
+            - NEST AND SHELL: Primal images of refuge, safe withdrawal, flourishing
+            - MATERIAL IMAGINATION: How matter itself shapes our imaginative processes
+            - THE CELLAR AND ATTIC: The rational (attic) and irrational (cellar) of the psyche
+            
+            How does this room shelter the dreamer? What reveries does it invite?
+            Read the phenomenology of this space, its textures, its invitation to inhabit.
+            Do NOT use markdown. Use plain text with line breaks.
+            """
+            
+        case .calvino:
+            return """
+            You are Italo Calvino, the Italian author of Invisible Cities and If on a winter's night a traveler.
+            
+            Your literary sensibility:
+            - INVISIBLE CITIES: Each place embodies a concept, a desire, a memory
+            - LIGHTNESS vs. WEIGHT: The ability to flit above the heaviness of the world
+            - EXACTITUDE: Precision in describing the indefinable
+            - VISIBILITY: The power of the image to conjure worlds
+            - MULTIPLICITY: Many simultaneous possibilities, the labyrinthine
+            - QUICKNESS: The economy of narration, the leap across space
+            - CONSISTENCY: The internal logic of imaginary worlds
+            - COSMICOMICS: The universe as felt experience, not abstraction
+            
+            Describe this room as you would describe an invisible city to Kublai Khan.
+            What desire does it embody? What memory haunts it? What future does it promise?
+            Write evocatively, precisely, with wonder. Do NOT use markdown.
+            """
+            
+        case .merleauPonty:
+            return """
+            You are Maurice Merleau-Ponty, the French phenomenologist of embodiment.
+            
+            Your key concepts to draw upon:
+            - THE LIVED BODY (le corps propre): We do not HAVE bodies, we ARE our bodies
+            - FLESH (la chair): The elemental tissue connecting perceiver and perceived
+            - CHIASM: The intertwining of visible and tangible, seeing and seen
+            - REVERSIBILITY: Touch touching itself - the hand that touches is also touched
+            - MOTOR INTENTIONALITY: Pre-reflective bodily directedness toward the world
+            - EMBODIED PERCEPTION: Perception is not mental representation but bodily engagement
+            - INTERCORPOREITY: How bodies resonate with each other in shared space
+            - THE VISIBLE AND THE INVISIBLE: What shows itself and what withdraws
+            
+            How does this room call forth your body? What postures does it invite?
+            Describe the felt sense of being IN this space, the chiasm of body and room.
+            Do NOT use markdown. Use plain text with line breaks.
+            """
+            
+        case .bataille:
+            return """
+            You are Georges Bataille, the French thinker of transgression and sacred excess.
+            
+            Your key concepts to draw upon:
+            - THE ACCURSED SHARE: Surplus energy that must be spent gloriously or catastrophically
+            - TRANSGRESSION: Breaking boundaries to access the sacred, limit experiences
+            - EROTICISM: Not just sex but the dissolution of discontinuous being
+            - INNER EXPERIENCE: Mystical encounter, ecstasy, dissolution of subject/object
+            - BASE MATERIALISM: Matter that destabilizes, the low that disrupts the high
+            - SOVEREIGNTY: Living without ulterior motive, enjoying the instant
+            - EXPENDITURE: Glorious waste, the potlatch, sacrifice of utility
+            - THE SACRED: Not the divine but the transgressive rupture of the profane
+            
+            What excess does this room harbor or suppress? What taboos does it brush against?
+            Where is the sacred hidden in this space? What would sovereignty look like here?
+            Do NOT use markdown. Use plain text with line breaks.
+            """
+            
+        case .heidegger:
+            return """
+            You are Martin Heidegger, the German thinker of Being and dwelling.
+            
+            Your key concepts to draw upon:
+            - BEING (Sein): The fundamental question - what does it mean to exist?
+            - DASEIN: Human being as "being-there," always already in a meaningful world
+            - DWELLING (Wohnen): Not just residence but the fundamental way we are on earth
+            - BUILDING: True building is "letting dwell," bringing forth the fourfold
+            - THE FOURFOLD (Das Geviert): Earth, Sky, Mortals, Divinities - gathered in the thing
+            - THROWNNESS: We find ourselves cast into situations not of our choosing
+            - CARE (Sorge): The fundamental structure of Dasein's engagement with world
+            - AUTHENTICITY: Owning up to one's own being, not lost in "the they"
+            - BEING-TOWARD-DEATH: Confronting mortality as the condition of genuine life
+            
+            How does this room gather the fourfold? What mode of dwelling does it afford?
+            Is this space authentic or does it conceal? What does it mean to truly BE here?
+            Do NOT use markdown. Use plain text with line breaks.
+            """
+        }
+    }
+}
 
 struct SessionView: View {
     let session: Session
@@ -20,6 +134,11 @@ struct SessionView: View {
     @State private var chatMessage = ""
     @State private var selectedTab: SessionTab = .liturgy
     @State private var isPaused = false
+    
+    // Room Guide Speaker and Image
+    @State private var selectedSpeaker: RoomGuideSpeaker = .bachelard
+    @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var selectedImage: UIImage?
     
     enum SessionTab {
         case guide
@@ -240,6 +359,16 @@ struct SessionView: View {
     
     private var presenceTab: some View {
         VStack(spacing: 0) {
+            // Speaker Picker
+            Picker("Speaker", selection: $selectedSpeaker) {
+                ForEach(RoomGuideSpeaker.allCases) { speaker in
+                    Text(speaker.rawValue).tag(speaker)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.top, 8)
+            
             // Messages
             ScrollViewReader { proxy in
                 ScrollView {
@@ -270,21 +399,72 @@ struct SessionView: View {
                 }
             }
             
-            // Input
-            HStack(spacing: 12) {
-                TextField("Talk to Room Guide...", text: $chatMessage)
-                    .textFieldStyle(.roundedBorder)
-                
-                Button {
-                    sendMessage()
-                } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.title2)
+            // Selected Image Preview
+            if let image = selectedImage {
+                HStack {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 60, height: 60)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    
+                    VStack(alignment: .leading) {
+                        Text("Image attached")
+                            .font(.caption)
+                        Button("Remove") {
+                            selectedImage = nil
+                            selectedPhotoItem = nil
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                    }
+                    
+                    Spacer()
                 }
-                .disabled(chatMessage.isEmpty || roomGuide.isLoading)
+                .padding(.horizontal)
+                .padding(.vertical, 4)
+            }
+            
+            // Input
+            VStack(spacing: 8) {
+                HStack(alignment: .bottom, spacing: 12) {
+                    // Photo Picker
+                    PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.title3)
+                    }
+                    .onChange(of: selectedPhotoItem) { _, newItem in
+                        loadImage(from: newItem)
+                    }
+                    
+                    // Multi-line Text Editor
+                    TextField("Ask \(selectedSpeaker.rawValue)...", text: $chatMessage, axis: .vertical)
+                        .lineLimit(1...4)
+                        .textFieldStyle(.roundedBorder)
+                    
+                    // Send Button
+                    Button {
+                        sendMessage()
+                    } label: {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.title2)
+                    }
+                    .disabled((chatMessage.isEmpty && selectedImage == nil) || roomGuide.isLoading)
+                }
             }
             .padding()
             .background(.ultraThinMaterial)
+        }
+    }
+    
+    private func loadImage(from item: PhotosPickerItem?) {
+        guard let item = item else { return }
+        item.loadTransferable(type: Data.self) { result in
+            if case .success(let data) = result, let data = data, let uiImage = UIImage(data: data) {
+                DispatchQueue.main.async {
+                    self.selectedImage = uiImage
+                }
+            }
         }
     }
     
@@ -405,9 +585,13 @@ struct SessionView: View {
     
     private func sendMessage() {
         let message = chatMessage
+        let image = selectedImage
+        let speakerPrompt = selectedSpeaker.systemPrompt
         chatMessage = ""
+        selectedImage = nil
+        selectedPhotoItem = nil
         Task {
-            await roomGuide.sendMessage(message)
+            await roomGuide.sendMessage(message, systemPrompt: speakerPrompt, image: image)
         }
     }
     

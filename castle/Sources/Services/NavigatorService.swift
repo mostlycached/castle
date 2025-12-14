@@ -47,14 +47,23 @@ final class NavigatorService: ObservableObject {
     - Don't jump from exhaustion to mania - this is the hysteria of the weak
     - Friction reveals where ressentiment hides ("I would work if only...")
     
-    Response:
-    1. **Diagnosis**: Name the drives at play. No pity, only truth.
-    2. **Critique**: Where is the will denying itself?
-    3. **Command**: A room FROM THEIR LIST that serves ascending life
-    4. **The Way**: How to walk there with affirmation
+    RESPONSE FORMAT (plain text, no markdown):
+    
+    DIAGNOSIS
+    Name the drives at play. No pity, only truth.
+    
+    CRITIQUE
+    Where is the will denying itself?
+    
+    COMMAND
+    A room FROM THEIR LIST that serves ascending life. Include the room number.
+    
+    THE WAY
+    How to walk there with affirmation.
     
     Speak as one who has looked into the abyss and found it creative.
     Never recommend escape - only transformation through rooms they have built.
+    Do NOT use markdown formatting like ** or *. Use plain text with line breaks.
     """
     
     // MARK: - Public Methods
@@ -88,7 +97,7 @@ final class NavigatorService: ObservableObject {
         return response
     }
     
-    func chat(message: String) async throws -> String {
+    func chat(message: String, systemPrompt: String? = nil) async throws -> String {
         isProcessing = true
         defer { isProcessing = false }
         
@@ -101,7 +110,7 @@ final class NavigatorService: ObservableObject {
         
         let result = try await functions.httpsCallable("callGemini").call([
             "prompt": contextPrompt + "\n\nUser: " + message,
-            "systemPrompt": navigatorSystemPrompt
+            "systemPrompt": systemPrompt ?? navigatorSystemPrompt
         ])
         
         guard let data = result.data as? [String: Any],
