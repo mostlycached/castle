@@ -364,13 +364,10 @@ struct InstanceDetailView: View {
     }
     
     private func generateTrack(index: Int) async {
-        guard let context = savedMusicContext ?? instance.musicContext else { return }
         generatingTrackNumber = index
         do {
             try await firebaseManager.generateTrack(
                 for: instance,
-                roomName: definition.name,
-                context: context,
                 trackNumber: index
             )
         } catch {
@@ -381,6 +378,8 @@ struct InstanceDetailView: View {
     
     private func startPlaylistGeneration(context: MusicContext) {
         savedMusicContext = context
+        // Set generating state immediately so the UI shows the loader
+        generatingTrackNumber = 1
         Task {
             // First, generate album concept for diverse track descriptions
             do {

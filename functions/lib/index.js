@@ -420,39 +420,39 @@ Respond with JSON only:
 /**
  * Generate a single track for a room instance
  * Uses ElevenLabs Music API - call once per track
+ *
+ * REQUIRES an album concept to exist (from generateAlbumConcept).
+ * The pre-generated prompt is passed DIRECTLY to ElevenLabs without modification.
+ * This preserves the creative intent from the album concept.
  */
 exports.generateTrack = (0, https_1.onCall)({ secrets: [elevenLabsApiKey], timeoutSeconds: 300 }, async (request) => {
     const uid = await requireAuthorization(request);
-    const { instanceId, musicContext, roomName, trackNumber } = request.data;
-    if (!instanceId || !musicContext || !trackNumber) {
-        throw new https_1.HttpsError("invalid-argument", "instanceId, musicContext, and trackNumber are required");
+    const { instanceId, trackNumber } = request.data;
+    if (!instanceId || !trackNumber) {
+        throw new https_1.HttpsError("invalid-argument", "instanceId and trackNumber are required");
     }
     const storage = admin.storage().bucket();
-    // Check if we have an album concept with pre-generated prompts
+    // Fetch the room instance to get album concept
     const instanceRef = db.collection("users").doc(uid).collection("rooms").doc(instanceId);
     const doc = await instanceRef.get();
-    const albumConcept = doc.data()?.album_concept;
-    let prompt;
-    let trackTitle;
-    if (albumConcept?.tracks) {
-        // Use the pre-generated prompt from album concept
-        const trackConcept = albumConcept.tracks.find((t) => t.trackNumber === trackNumber);
-        if (trackConcept) {
-            prompt = trackConcept.prompt;
-            trackTitle = trackConcept.title;
-        }
-        else {
-            prompt = buildMusicPrompt(musicContext, trackNumber, roomName);
-            trackTitle = `${roomName} - Track ${trackNumber}`;
-        }
+    const roomData = doc.data();
+    const albumConcept = roomData?.album_concept;
+    // Album concept is required - it's the sole source of truth
+    if (!albumConcept?.tracks) {
+        throw new https_1.HttpsError("failed-precondition", "No album concept found. Generate an album concept first.");
     }
-    else {
-        // Fallback to basic prompt building
-        prompt = buildMusicPrompt(musicContext, trackNumber, roomName);
-        trackTitle = `${roomName} - Track ${trackNumber}`;
+    // Get the track from the album concept
+    const trackConcept = albumConcept.tracks.find((t) => t.trackNumber === trackNumber);
+    if (!trackConcept) {
+        throw new https_1.HttpsError("not-found", `Track ${trackNumber} not found in album concept`);
     }
+    // Use the prompt EXACTLY as generated - no modifications
+    const prompt = trackConcept.prompt;
+    const trackTitle = trackConcept.title;
+    console.log(`Track ${trackNumber}: ${trackTitle}`);
+    console.log(`Prompt: ${prompt.substring(0, 100)}...`);
     try {
-        // Call ElevenLabs Music API
+        // Call ElevenLabs Music API with the prompt directly
         const response = await fetch("https://api.elevenlabs.io/v1/music/generate", {
             method: "POST",
             headers: {
@@ -461,7 +461,7 @@ exports.generateTrack = (0, https_1.onCall)({ secrets: [elevenLabsApiKey], timeo
             },
             body: JSON.stringify({
                 prompt: prompt,
-                duration_seconds: 180, // 3 minutes to match prompted structure
+                duration_seconds: 180, // 3 minutes
                 output_format: "mp3_44100_128"
             })
         });
@@ -490,33 +490,30 @@ exports.generateTrack = (0, https_1.onCall)({ secrets: [elevenLabsApiKey], timeo
         const track = {
             url: publicUrl,
             title: trackTitle,
-            duration_seconds: 240,
+            duration_seconds: 180,
             prompt: prompt,
             is_downloaded: false
         };
         // Update the room instance - append to existing playlist
-        const instanceRef = db.collection("users").doc(uid).collection("rooms").doc(instanceId);
-        const doc = await instanceRef.get();
-        const existingPlaylist = doc.data()?.playlist || [];
+        const existingPlaylist = roomData?.playlist || [];
         // Remove any existing track with same number and add new one
-        const updatedPlaylist = existingPlaylist.filter((t) => !t.title.endsWith(`Track ${trackNumber}`));
+        const updatedPlaylist = existingPlaylist.filter((t) => !t.title.endsWith(`Track ${trackNumber}`) && !t.title.includes(trackTitle));
         updatedPlaylist.push(track);
         // Sort by track number
         updatedPlaylist.sort((a, b) => {
-            const aNum = parseInt(a.title.split("Track ")[1]) || 0;
-            const bNum = parseInt(b.title.split("Track ")[1]) || 0;
+            const aNum = parseInt(a.title.match(/Track (\d+)/)?.[1] || "0");
+            const bNum = parseInt(b.title.match(/Track (\d+)/)?.[1] || "0");
             return aNum - bNum;
         });
         await instanceRef.update({
             playlist: updatedPlaylist,
-            playlist_generated_at: admin.firestore.FieldValue.serverTimestamp(),
-            music_context: musicContext
+            playlist_generated_at: admin.firestore.FieldValue.serverTimestamp()
         });
-        console.log(`Generated track ${trackNumber} for ${roomName}`);
+        console.log(`Generated track ${trackNumber}: ${trackTitle}`);
         return {
             success: true,
             track: track,
-            message: `Generated track ${trackNumber} for ${roomName}`
+            message: `Generated track ${trackNumber}: ${trackTitle}`
         };
     }
     catch (error) {
@@ -524,45 +521,4 @@ exports.generateTrack = (0, https_1.onCall)({ secrets: [elevenLabsApiKey], timeo
         throw new https_1.HttpsError("internal", `Failed to generate track: ${error}`);
     }
 });
-/**
- * Build a rich prompt for ElevenLabs based on MusicContext
- */
-function buildMusicPrompt(context, trackNumber, roomName) {
-    const parts = [];
-    // Base context
-    parts.push(`Ambient music for ${roomName}, a ${context.scene_setting} experience.`);
-    // Location
-    parts.push(`Inspired by: ${context.location_inspiration}.`);
-    // Instruments
-    if (context.instruments && context.instruments.length > 0) {
-        parts.push(`Instruments: ${context.instruments.join(", ")}.`);
-    }
-    // Atmosphere
-    parts.push(`Mood: ${context.mood}. Tempo: ${context.tempo}.`);
-    // Somatic
-    if (context.somatic_elements && context.somatic_elements.length > 0) {
-        parts.push(`Evoking sensations of: ${context.somatic_elements.join(", ")}.`);
-    }
-    // Found sounds
-    if (context.found_sounds && context.found_sounds.length > 0) {
-        parts.push(`Subtly integrate found sounds: ${context.found_sounds.join(", ")}.`);
-    }
-    // Narrative progression
-    if (context.narrative_arc) {
-        const phases = ["opening", "rising", "building", "peak", "reflection", "descent", "resolution", "closing"];
-        const phase = phases[Math.min(trackNumber - 1, phases.length - 1)];
-        parts.push(`Narrative phase: ${phase} (${context.narrative_arc}).`);
-    }
-    // Track variation and structure
-    parts.push(`Track ${trackNumber} of 8.`);
-    // Add explicit structure to ensure full length
-    const structures = [
-        "Structure: Intro (0:00-0:30, atmospheric build) → Main Theme (0:30-1:15, melody develops) → Variation (1:15-2:00, textural shift) → Climax (2:00-2:30, full intensity) → Outro (2:30-3:00, gentle fade). Length: 3:00.",
-        "Structure: Opening (0:00-0:25, sparse elements) → Development (0:25-1:00, layers build) → Core (1:00-1:45, primary theme) → Bridge (1:45-2:15, contrast) → Resolution (2:15-3:00, peaceful close). Length: 3:00.",
-        "Structure: Prelude (0:00-0:20, single instrument) → Expansion (0:20-0:50, ensemble grows) → Peak (0:50-1:30, maximum density) → Descent (1:30-2:15, gradual reduction) → Coda (2:15-3:00, echoes fade). Length: 3:00."
-    ];
-    parts.push(structures[(trackNumber - 1) % structures.length]);
-    parts.push("Full song structure required.");
-    return parts.join(" ");
-}
 //# sourceMappingURL=index.js.map

@@ -203,7 +203,8 @@ final class FirebaseManager: ObservableObject {
     }
     
     /// Generate a single track for a room instance via Cloud Function
-    func generateTrack(for instance: RoomInstance, roomName: String, context: MusicContext, trackNumber: Int) async throws {
+    /// The cloud function fetches the album concept and uses its prompts directly
+    func generateTrack(for instance: RoomInstance, trackNumber: Int) async throws {
         guard let instanceId = instance.id else { 
             throw NSError(domain: "FirebaseManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Instance has no ID"])
         }
@@ -211,21 +212,8 @@ final class FirebaseManager: ObservableObject {
             throw NSError(domain: "FirebaseManager", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
         }
         
-        let contextDict: [String: Any] = [
-            "scene_setting": context.sceneSetting.rawValue,
-            "narrative_arc": context.narrativeArc ?? "",
-            "somatic_elements": context.somaticElements,
-            "location_inspiration": context.locationInspiration,
-            "instruments": context.instruments,
-            "mood": context.mood,
-            "tempo": context.tempo,
-            "found_sounds": context.foundSounds
-        ]
-        
         let result = try await functions.httpsCallable("generateTrack").call([
             "instanceId": instanceId,
-            "roomName": roomName,
-            "musicContext": contextDict,
             "trackNumber": trackNumber
         ])
         
