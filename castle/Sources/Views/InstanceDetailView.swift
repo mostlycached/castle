@@ -1203,16 +1203,27 @@ struct MusicContextEditor: View {
         - Archetype: \(definition.archetype ?? "N/A")
         - Instance: \(instance.variantName.isEmpty ? "Default" : instance.variantName)
         
+        CREATIVE CONCEPTS (each album should have a specific sonic identity like these):
+        - "French New Wave film score" - sparse, dissonant piano, Nouvelle Vague awkwardness
+        - "Brutalist techno" - cold, industrial, concrete sound, Berlin warehouse at 4am
+        - "Soap opera organ" - Hammond B3 daytime TV drama scoring, tremolo strings
+        - "Musique concrète" - processed field recordings, no traditional instruments
+        - "Deep Listening drone" - extremely slow, meditation on attention, sustained tones
+        - "70s AM radio warmth" - soft rock, Laurel Canyon vibes, analog tape hiss
+        - "A Cappella human chorus" - all sounds from human voice, beatbox, throat singing
+        - "Solo Cello exploration" - one instrument, different techniques (sul ponticello, harmonics, pizzicato)
+        - "Gamelan water ritual" - Indonesian percussion with aquatic found sounds
+        - "Free jazz collision" - multiple groups playing simultaneously, clashing harmonies
+        
         GENRE PALETTE (pick from these or combine creatively):
-        - Vocal: acapella, Gregorian chant, Byzantine chant, throat singing (Tuvan khöömei, Mongolian), guttural chants, polyphonic choir, Qawwali
+        - Vocal: acapella, Gregorian chant, Byzantine chant, throat singing, polyphonic choir, Qawwali
         - Contemporary: lo-fi R&B, neo-soul, chillhop, trip-hop, downtempo, vaporwave
-        - Electronic: dark ambient, industrial, IDM, glitch, synthwave, electro swing, techno, house
-        - Rock/Metal: post-rock, shoegaze, doom metal, black metal, gothic rock, progressive rock
-        - Classical: baroque, romantic orchestral, minimalist (Glass, Reich), contemporary classical
-        - World: gamelan, Carnatic, Hindustani raga, flamenco, Afrobeat, bossa nova, reggae, dub, Celtic, Klezmer
-        - Regional: French chanson, fado, tango, anime/J-pop, K-pop, Bollywood, Ethiopian jazz
-        - Experimental: noise, musique concrète, free jazz, drone, field recordings, ASMR-influenced
-        - Traditional: country, folk, bluegrass, sea shanties, work songs, lullabies
+        - Electronic: dark ambient, industrial, IDM, glitch, synthwave, electro swing, techno
+        - Rock/Metal: post-rock, shoegaze, doom metal, gothic rock, progressive rock
+        - Classical: baroque, romantic orchestral, minimalist, contemporary classical
+        - World: gamelan, Carnatic, Hindustani raga, flamenco, Afrobeat, bossa nova, Ethiopian jazz
+        - Experimental: noise, musique concrète, free jazz, drone, field recordings
+        - Traditional: folk, bluegrass, sea shanties, work songs, lullabies
         
         PHYSICAL ATMOSPHERES (for "location" field):
         - Volcanic: active volcano, lava tubes, geothermal springs, sulfur vents

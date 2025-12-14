@@ -337,63 +337,64 @@ export const generateAlbumConcept = onCall(
         const genAI = new GoogleGenerativeAI(geminiApiKey.value());
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-        const prompt = `You are composing an 8-track music album for a room called "${roomName}".
+        const prompt = `You are a music director creating an 8-track album for a room called "${roomName}".
 
-Context:
-- Scene: ${musicContext.scene_setting}
-- Location inspiration: ${musicContext.location_inspiration}
+The user has selected this conceptual direction:
+- Location/Setting: ${musicContext.location_inspiration}
 - Mood: ${musicContext.mood}
-- Tempo: ${musicContext.tempo}
-- Instruments: ${musicContext.instruments?.join(", ") || "ambient pads"}
-- Somatic elements: ${musicContext.somatic_elements?.join(", ") || "presence"}
-- Found sounds: ${musicContext.found_sounds?.join(", ") || "none"}
+- Instruments: ${musicContext.instruments?.join(", ") || "open palette"}
+- Found sounds: ${musicContext.found_sounds?.join(", ") || "none specified"}
 ${musicContext.narrative_arc ? `- Narrative arc: ${musicContext.narrative_arc}` : ""}
 
-Create an album concept with 8 DISTINCT tracks. Each track MUST be 3 minutes long.
+YOUR TASK: Create a COHESIVE 8-track album. All tracks should share the same sonic palette and genre, but each track explores a DIFFERENT aspect, mood, technique, or narrative moment within that constraint.
 
-CRITICAL: Each track prompt MUST include an explicit TIMESTAMP-BASED STRUCTURE. Choose the most appropriate structure for each track based on the room's mood and the track's narrative phase.
+COHESION EXAMPLES:
+- If the concept is "A Cappella voices only" → all tracks use only human voice, but each explores different vocal techniques (beatbox, throat singing, whispered, harmonies, reversed)
+- If the concept is "Solo Cello" → all tracks feature cello, but different techniques (sul ponticello, harmonics, con sordino, pizzicato, processed)
+- If the concept is "Gamelan and water sounds" → all tracks use gamelan instruments with water, but different moods (meditative, chaotic, ceremonial, playful)
+- If the concept is "Musique concrète" → all tracks use processed found sounds, but from different sources (espresso machine, conversations, traffic, rain)
 
-AVAILABLE SONG STRUCTURES (choose the best fit for each track):
+GENRE PALETTE TO DRAW FROM (stay consistent across the album):
+- Vocal: acapella, throat singing, Gregorian chant, polyphonic choir
+- Electronic: dark ambient, industrial, synthwave, glitch, drone
+- World: gamelan, Carnatic, flamenco, Afrobeat, Ethiopian jazz
+- Classical: baroque, minimalist, contemporary classical
+- Experimental: musique concrète, free jazz, field recordings, noise
 
-1. RONDO (ABACADA) - Ritual/liturgical feel, keeps returning to home theme:
-   "Structure: A-Home (0:00-0:30) → B-Departure (0:30-1:00) → A-Return (1:00-1:20) → C-Exploration (1:20-1:50) → A-Return (1:50-2:10) → D-Climax (2:10-2:40) → A-Final (2:40-3:00)"
+UNUSUAL INSTRUMENTS:
+- Tibetan singing bowls, crystal bowls, gongs
+- Didgeridoo, jaw harp, kalimba, mbira
+- Gamelan, hang drum, tabla, djembe
+- Kora, oud, sitar, erhu, shamisen
+- Hurdy-gurdy, accordion, harmonium
+- Prepared piano, bowed vibraphone, waterphone
+- Theremin, modular synths
 
-2. THROUGH-COMPOSED (ABCDEF) - Continuous evolution, no repetition, journeys:
-   "Structure: Departure (0:00-0:30) → Encounter (0:30-1:00) → Conflict (1:00-1:30) → Transformation (1:30-2:00) → Integration (2:00-2:30) → Arrival (2:30-3:00)"
+FOUND SOUNDS:
+- Natural: volcanic rumble, dripping water, whale song, cicadas, thunder, crackling fire
+- Industrial: machinery hum, metal clangs, train rhythms
+- Human: heartbeat, breath, footsteps, crowd murmur
 
-3. ARCH FORM (ABCBA) - Symmetrical, meditative, starts and ends the same:
-   "Structure: Descent (0:00-0:30) → Deepening (0:30-1:00) → Nadir (1:00-1:30) → Rising (1:30-2:15) → Ascent (2:15-3:00)"
+PROMPT STRUCTURE - each track prompt must include:
+1. The genre/style (consistent with album)
+2. Specific instrumentation or sound sources for THIS track
+3. Timestamped structure with NARRATIVE descriptions (not just "Intro", but "the tension builds", "warmth returns", "melody collapses")
+4. End with "Length: 3:00. No vocals." (or specify if vocals)
 
-4. SONATA FORM - Drama, dialectics, high-energy production:
-   "Structure: Exposition-Theme1 (0:00-0:30) → Exposition-Theme2 (0:30-1:00) → Development-Collision (1:00-1:45) → Development-Transform (1:45-2:15) → Recapitulation (2:15-3:00)"
+EXAMPLE TRACK PROMPT (for a Cello album):
+"Solo Cello. Aggressive, sul ponticello bowing. Structure: Intro (0:00-0:20, tense harmonics establishing unease) → A Section (0:20-0:50, main melody played with harsh, metallic timbre) → B Section (0:50-1:30, contrasting lyrical passage that tries to be beautiful but keeps getting interrupted) → A' Section (1:30-2:15, main melody returns, faster, more violent) → Coda (2:15-3:00, sudden exhaustion, melody collapses into held harmonics). Mood: Suppressed rage. Length: 3:00. No vocals."
 
-5. SPIRAL/ADDITIVE - Layers accumulate, building intensity:
-   "Structure: Layer1 (0:00-0:30) → +Layer2 (0:30-1:00) → +Layer3 (1:00-1:30) → +Layer4 (1:30-2:00) → Full-Texture (2:00-2:30) → Strip-Back (2:30-3:00)"
-
-6. DRONE + EVENT - Static bed with floating incidents, ambient/restoration:
-   "Structure: Drone-Establish (0:00-0:30) → Event1 (0:40-0:50) → Drone (0:50-1:10) → Event2 (1:15-1:30) → Event3 (1:45-2:00) → Events-Cluster (2:00-2:30) → Drone-Alone (2:30-3:00)"
-
-7. CALL AND RESPONSE - Dialogue, social/exchange spaces:
-   "Structure: Call (0:00-0:20) → Response (0:20-0:40) → Call-Varies (0:40-1:00) → Response-Evolves (1:00-1:20) → Overlap-Duet (1:20-2:00) → Unison (2:00-2:30) → Echo-Fade (2:30-3:00)"
-
-Each track should:
-1. Choose the structure that best fits its narrative phase and the room's character
-2. Feature different instrument combinations
-3. Include varied found sounds or textural elements  
-4. Use EXPLICIT TIMESTAMPS covering the full 3 minutes
-5. End the prompt with "Length: 3:00."
+Do NOT reference any artist or composer names.
 
 Respond with JSON only:
 {
-    "albumTitle": "Album title",
-    "albumConcept": "2-3 sentence album concept",
+    "albumTitle": "Album title that reflects the cohesive concept",
+    "albumConcept": "2-3 sentence album concept describing the unifying sonic identity",
     "tracks": [
         {
             "trackNumber": 1,
             "title": "Track title",
-            "prompt": "Detailed prompt with instruments, mood, tempo, textures, found sounds. Include chosen structure with timestamps. Length: 3:00.",
-            "structureType": "rondo|through-composed|arch|sonata|spiral|drone-event|call-response",
-            "narrativePhase": "opening/rising/building/peak/reflection/descent/resolution/closing"
+            "prompt": "Complete prompt: genre, instrumentation, timestamped structure with narrative descriptions. Length: 3:00. No vocals."
         }
     ]
 }`;
